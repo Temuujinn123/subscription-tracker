@@ -1,9 +1,9 @@
-// components/SubscriptionForm.tsx
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 interface SubscriptionFormProps {
   initialData?: Partial<Subscription>;
-  onSubmit: (data: Omit<Subscription, "id">) => void;
+  onSubmit: (data: RequestSub) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -14,11 +14,11 @@ export default function SubscriptionForm({
   onCancel,
   isLoading = false,
 }: SubscriptionFormProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<RequestSub>({
     name: initialData?.name || "",
     price: initialData?.price || "",
-    cycle: initialData?.cycle || "monthly",
-    nextPayment: initialData?.nextPayment || "",
+    billingCycle: initialData?.billingCycle || "monthly",
+    nextBillingDate: initialData?.nextBillingDate || "",
     category: initialData?.category || "entertainment",
   });
 
@@ -29,8 +29,21 @@ export default function SubscriptionForm({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
+    if (formData.name.trim() === "")
+      return toast.error("Please enter Service Name");
+
+    if (formData.price == 0) return toast.error("Please enter Price");
+
+    if (formData.billingCycle.trim() === "")
+      return toast.error("Please enter Billing Cycle");
+
+    if (formData.nextBillingDate.trim() === "")
+      return toast.error("Please enter Next Payment Date");
+
+    if (formData.category.trim() === "")
+      return toast.error("Please enter Category");
+
     onSubmit({
       ...formData,
       price: parseFloat(formData.price as string),
@@ -43,7 +56,7 @@ export default function SubscriptionForm({
         {initialData?.id ? "Edit Subscription" : "Add New Subscription"}
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-4">
         <div>
           <label
             htmlFor="name"
@@ -91,39 +104,39 @@ export default function SubscriptionForm({
 
         <div>
           <label
-            htmlFor="cycle"
+            htmlFor="billingCycle"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
             Billing Cycle
           </label>
           <select
-            id="cycle"
-            name="cycle"
+            id="billingCycle"
+            name="billingCycle"
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-            value={formData.cycle}
+            value={formData.billingCycle}
             onChange={handleChange}
           >
             <option value="monthly">Monthly</option>
             <option value="yearly">Yearly</option>
-            <option value="quarterly">Quarterly</option>
             <option value="weekly">Weekly</option>
           </select>
         </div>
 
-        <div>
+        <div className="relative">
           <label
-            htmlFor="nextPayment"
+            htmlFor="nextBillingDate"
             className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
           >
             Next Payment Date
           </label>
           <input
             type="date"
-            id="nextPayment"
-            name="nextPayment"
+            min={new Date().toISOString().split("T")[0]}
+            id="nextBillingDate"
+            name="nextBillingDate"
             required
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
-            value={formData.nextPayment}
+            value={formData.nextBillingDate}
             onChange={handleChange}
           />
         </div>
@@ -160,7 +173,8 @@ export default function SubscriptionForm({
             Cancel
           </button>
           <button
-            type="submit"
+            type="button"
+            onClick={handleSubmit}
             disabled={isLoading}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 transition-colors"
           >
@@ -171,7 +185,7 @@ export default function SubscriptionForm({
               : "Add Subscription"}
           </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 }

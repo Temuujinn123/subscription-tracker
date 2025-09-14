@@ -1,13 +1,16 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { userApi } from "@/services/user";
-import { errorHandlerMiddleware } from "./middleware/errorHandleMiddleware";
+import { subscriptionApi } from "./subsciption";
 
 export const store = configureStore({
   reducer: {
     [userApi.reducerPath]: userApi.reducer,
+    [subscriptionApi.reducerPath]: subscriptionApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(userApi.middleware),
+    getDefaultMiddleware()
+      .concat(userApi.middleware)
+      .concat(subscriptionApi.middleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

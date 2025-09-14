@@ -28,6 +28,10 @@ body {
   scrollbar-color: #888 white; /* Thumb color then Track color */
 }
 
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
 /* Style the entire scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

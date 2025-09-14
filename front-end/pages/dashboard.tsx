@@ -11,15 +11,10 @@ export default function Dashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    // if (!user) {
-    //   router.push("/login");
-    //   return;
-    // }
-
     // Mock data - in a real app, you would fetch this from your API
-    const mockSubscriptions: Subscription[] = [
+    const mockSubscriptions: any[] = [
       {
-        id: "1",
+        id: 1,
         name: "Netflix",
         price: 15.99,
         cycle: "monthly",
@@ -27,7 +22,7 @@ export default function Dashboard() {
         category: "entertainment",
       },
       {
-        id: "2",
+        id: 2,
         name: "Spotify",
         price: 9.99,
         cycle: "monthly",
@@ -35,7 +30,7 @@ export default function Dashboard() {
         category: "music",
       },
       {
-        id: "3",
+        id: 3,
         name: "Adobe Creative Cloud",
         price: 52.99,
         cycle: "monthly",
@@ -51,10 +46,8 @@ export default function Dashboard() {
   }, [user, router]);
 
   const handleDelete = (id: string) => {
-    setSubscriptions(subscriptions.filter((sub) => sub.id !== id));
+    // setSubscriptions(subscriptions.filter((sub) => sub.id !== id));
   };
-
-  // if (!user) return null;
 
   return (
     <div>

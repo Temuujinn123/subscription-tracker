@@ -4,8 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import SubscriptionForm from "@/components/SubscriptionForm";
 
 // Mock data - in a real app, you would fetch this from your API based on the ID
-const mockSubscription: Subscription = {
-  id: "1",
+const mockSubscription: any = {
+  id: 1,
   name: "Netflix",
   price: 15.99,
   cycle: "monthly",
@@ -27,7 +27,7 @@ export default function EditSubscription() {
     }
   }, [id]);
 
-  const handleSubmit = async (data: Omit<Subscription, "id">) => {
+  const handleSubmit = async (data: RequestSub) => {
     setIsLoading(true);
 
     // In a real app, you would update this in your database via an API call

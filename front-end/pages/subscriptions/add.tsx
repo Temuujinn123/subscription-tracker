@@ -2,23 +2,42 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 import SubscriptionForm from "@/components/SubscriptionForm";
+import { useCreateSubMutation } from "@/services/subsciption";
+import toast from "react-hot-toast";
 
 export default function AddSubscription() {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
 
-  const handleSubmit = async (data: Omit<Subscription, "id">) => {
+  const [handleCreateSub] = useCreateSubMutation();
+
+  const handleSubmit = async (data: RequestSub) => {
     setIsLoading(true);
 
-    // In a real app, you would save this to your database via an API call
-    console.log("Adding subscription:", data);
+    toast.promise(createSubHandler(data), {
+      loading: "Loading...",
+      success: <b>Success</b>,
+      error: (err) => <b>{err.message}</b>,
+    });
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      router.push("/dashboard");
-    }, 1000);
+    setIsLoading(false);
+  };
+
+  const createSubHandler = async (data: RequestSub) => {
+    const response = await handleCreateSub(data);
+
+    if ("error" in response && response.error) {
+      console.error("Failed to create sub: ", response.error);
+
+      if ("data" in response.error) {
+        throw new Error(String(response.error.data));
+      }
+
+      throw new Error("Failed to create sub.");
+    }
+
+    router.push("/dashboard");
   };
 
   const handleCancel = () => {
@@ -26,7 +45,6 @@ export default function AddSubscription() {
   };
 
   if (!user) {
-    router.push("/login");
     return null;
   }
 
