@@ -20,6 +20,7 @@ func Register(db models.Database) http.HandlerFunc {
 
 		// Check if user already exist
 		existingUser, _ := db.GetUserByEmail(req.Email)
+
 		if existingUser != nil {
 			http.Error(w, "User already exist", http.StatusConflict)
 			return
@@ -181,5 +182,14 @@ func AuthGoogle(db models.Database, googleOauthConfig *oauth2.Config) http.Handl
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)
+	}
+}
+
+func GetUserDetail(db models.Database) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := r.Context().Value("user").(*models.User)
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(user)
 	}
 }

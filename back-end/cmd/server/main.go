@@ -85,6 +85,7 @@ func main() {
 	authRouter.Use(middleware.AuthMiddleware(db))
 
 	// Subscription routes (protected)
+	authRouter.HandleFunc("/api/v1/detail", handlers.GetUserDetail(db)).Methods("GET")
 	authRouter.HandleFunc("/api/v1/subscriptions", handlers.GetSubscriptions(db, cacheService)).Methods("GET")
 	authRouter.HandleFunc("/api/v1/subscriptions", handlers.CreateSubscription(db)).Methods("POST")
 	authRouter.HandleFunc("/api/v1/subscriptions/{id}", handlers.GetSubscription(db)).Methods("GET")
@@ -93,7 +94,7 @@ func main() {
 
 	// Cache management endpoints (for debugging)
 	if cacheService != nil {
-		authRouter.HandleFunc("/cache/clear", func(w http.ResponseWriter, r *http.Request) {
+		router.HandleFunc("/cache/clear", func(w http.ResponseWriter, r *http.Request) {
 			err := cacheService.InvalidateSubscriptionsCache()
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)

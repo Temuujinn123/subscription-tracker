@@ -121,10 +121,10 @@ func (db *DB) GetAllSubscriptions() ([]models.Subscription, error) {
 			&sub.Price,
 			&sub.BillingCycle,
 			&sub.NextBillingDate,
-			&sub.Email,
 			&sub.IsActive,
 			&sub.CreatedAt,
 			&sub.UpdatedAt,
+			&sub.Email,
 		)
 		if err != nil {
 			return nil, err
@@ -215,7 +215,7 @@ func (db *DB) UpdateSubscription(id int, req models.CreateSubscriptionRequest) (
 				next_billing_date = $4, 
 				updated_at = CURRENT_TIMESTAMP 
 	          WHERE id = $5 
-			  RETURNING id, name, price, billing_cycle, next_billing_date, email, is_active, created_at, updated_at`
+			  RETURNING id, name, price, billing_cycle, next_billing_date, is_active, created_at, updated_at`
 
 	var sub models.Subscription
 	err := db.QueryRow(query, req.Name, req.Price, req.BillingCycle, req.NextBillingDate, id).
@@ -362,21 +362,32 @@ func (db *DB) GetUserByID(id int) (*models.User, error) {
 
 func (db *DB) GetUserByEmail(email string) (*models.User, error) {
 	query := `
-		SELECT *
+		SELECT 
+			id, 
+			name, 
+			password_hash,
+			email, 
+			created_at, 
+			updated_at
 		FROM users
 		WHERE
 			email = $1
 	`
 
 	row := db.QueryRow(query, email)
+
 	var user models.User
 	err := row.Scan(
 		&user.ID,
 		&user.Name,
+		&user.PasswordHash,
 		&user.Email,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
+
+	fmt.Println(err)
+
 	if err != nil {
 		return nil, err
 	}
