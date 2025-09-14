@@ -84,7 +84,7 @@ func main() {
 	authRouter := router.PathPrefix("/").Subrouter()
 	authRouter.Use(middleware.AuthMiddleware(db))
 
-	// Subscription routes (protected)
+	// Porotected routes
 	authRouter.HandleFunc("/api/v1/detail", handlers.GetUserDetail(db)).Methods("GET")
 	authRouter.HandleFunc("/api/v1/subscriptions", handlers.GetSubscriptions(db, cacheService)).Methods("GET")
 	authRouter.HandleFunc("/api/v1/subscriptions", handlers.CreateSubscription(db)).Methods("POST")

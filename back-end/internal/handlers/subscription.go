@@ -55,9 +55,7 @@ func CreateSubscription(db models.Database) http.HandlerFunc {
 
 		user := r.Context().Value("user").(*models.User)
 
-		req.Email = user.Email
-
-		subscription, err := db.CreateSubscription(req)
+		subscription, err := db.CreateSubscription(req, user.ID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -103,10 +101,6 @@ func UpdateSubscription(db models.Database) http.HandlerFunc {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
-
-		user := r.Context().Value("user").(*models.User)
-
-		req.Email = user.Email
 
 		subscription, err := db.UpdateSubscription(id, req)
 		if err != nil {

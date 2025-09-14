@@ -32,9 +32,9 @@ func checkUpcomingSubscriptions(db *database.DB) {
 	emailConfig := email.EmailConfig{
 		SMTPHost:     "smtp.gmail.com",
 		SMTPPort:     587,
-		SMTPUser:     "your-email@gmail.com",
-		SMTPPassword: "your-app-password",
-		FromEmail:    "your-email@gmail.com",
+		SMTPUser:     "temuujinn8563@gmail.com",
+		SMTPPassword: "rcgp vvrf ywcq oaur",
+		FromEmail:    "temuujinn8563@gmail.com",
 	}
 
 	emailService := email.NewEmailService(emailConfig)

@@ -172,9 +172,9 @@ func (db *DB) GetSubscriptionByID(id int) (*models.Subscription, error) {
 	return &sub, nil
 }
 
-func (db *DB) CreateSubscription(req models.CreateSubscriptionRequest) (*models.Subscription, error) {
-	query := `INSERT INTO subscriptions (name, price, billing_cycle, next_billing_date) 
-	          VALUES ($1, $2, $3, $4) 
+func (db *DB) CreateSubscription(req models.CreateSubscriptionRequest, userId int) (*models.Subscription, error) {
+	query := `INSERT INTO subscriptions (name, price, billing_cycle, next_billing_date, user_id)
+	          VALUES ($1, $2, $3, $4, $5) 
 	          RETURNING id, name, price, billing_cycle, next_billing_date, is_active, created_at, updated_at`
 
 	var sub models.Subscription
@@ -184,6 +184,7 @@ func (db *DB) CreateSubscription(req models.CreateSubscriptionRequest) (*models.
 		req.Price,
 		req.BillingCycle,
 		req.NextBillingDate,
+		userId,
 	).Scan(
 		&sub.ID,
 		&sub.Name,
