@@ -1,8 +1,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { errorHandlerMiddleware } from "./middleware/errorHandleMiddleware";
 
 export const userApi = createApi({
   reducerPath: "userApi",
-  baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_URL }),
+  baseQuery: errorHandlerMiddleware,
   endpoints: (build) => ({
     register: build.mutation<
       AuthResult,
@@ -37,8 +38,15 @@ export const userApi = createApi({
         },
       }),
     }),
+    getUserDetail: build.query<User, void>({
+      query: () => "detail",
+    }),
   }),
 });
 
-export const { useRegisterMutation, useLoginMutation, useAuthGoogleMutation } =
-  userApi;
+export const {
+  useRegisterMutation,
+  useLoginMutation,
+  useAuthGoogleMutation,
+  useGetUserDetailQuery,
+} = userApi;

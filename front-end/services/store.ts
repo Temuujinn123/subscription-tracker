@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { userApi } from "@/services/user";
+import { errorHandlerMiddleware } from "./middleware/errorHandleMiddleware";
 
 export const store = configureStore({
   reducer: {

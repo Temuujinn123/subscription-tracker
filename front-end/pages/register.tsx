@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthForm from "@/components/AuthForm";
 import FormInput from "@/components/FormInput";
 import PasswordInput from "@/components/PasswordInput";
 import TermsModal from "@/components/TermsModal";
+
+const emailRegex =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 export default function Register() {
   const [name, setName] = useState("");
@@ -17,25 +19,30 @@ export default function Register() {
   const [termsAgree, setTermsAgree] = useState(false);
 
   const { signUp } = useAuth();
-  const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    if (name.trim() === "") return setError("Please enter your name");
 
-    if (password !== confirmPassword) {
+    if (email.trim() === "") return setError("Please enter your email");
+
+    if (!emailRegex.test(email.trim()))
+      return setError("Please enter valid email");
+
+    if (password.trim() !== confirmPassword.trim()) {
       return setError("Passwords do not match");
     }
 
-    if (password.length < 6) {
+    if (password.trim().length < 6) {
       return setError("Password must be at least 6 characters long");
     }
+
+    if (!termsAgree) return setError("Please accept terms and condition");
 
     setError("");
     setIsLoading(true);
 
     try {
-      await signUp(email, password);
-      router.push("/dashboard");
+      await signUp(name.trim(), email.trim(), password.trim());
     } catch (error) {
       setError("Failed to create an account. Please try again.");
     } finally {
@@ -143,7 +150,6 @@ export default function Register() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Create a password (min. 6 characters)"
-            error={error ? " " : undefined}
           />
 
           <PasswordInput

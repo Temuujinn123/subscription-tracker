@@ -5,6 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { Provider } from "react-redux";
 import { store } from "@/services/store";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { Toaster } from "react-hot-toast";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -15,6 +16,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         >
           {/* <ThemeProvider> */}
           <Layout>
+            <Toaster />
             <Component {...pageProps} />
           </Layout>
           {/* </ThemeProvider> */}

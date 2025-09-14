@@ -4,6 +4,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import AuthForm from "@/components/AuthForm";
 import FormInput from "@/components/FormInput";
 import PasswordInput from "@/components/PasswordInput";
+import toast from "react-hot-toast";
+
+const emailRegex =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -12,21 +16,21 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
 
   const { signIn } = useAuth();
-  const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    if (email.trim() === "") return setError("Please enter you email");
+
+    if (!emailRegex.test(email.trim()))
+      return setError("Please enter valid email");
+
+    if (password.trim() === "") return toast.error("Please enter you password");
+
     setError("");
     setIsLoading(true);
 
-    try {
-      await signIn(email, password);
-      router.push("/dashboard");
-    } catch (error) {
-      setError("Failed to sign in. Please check your credentials.");
-    } finally {
-      setIsLoading(false);
-    }
+    await signIn(email.trim(), password.trim());
+
+    setIsLoading(false);
   };
 
   return (
