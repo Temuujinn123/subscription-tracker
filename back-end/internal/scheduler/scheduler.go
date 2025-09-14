@@ -2,6 +2,7 @@ package scheduler
 
 import (
 	"log"
+	"os"
 	"subscription-tracker/internal/database"
 	"subscription-tracker/internal/email"
 
@@ -32,9 +33,9 @@ func checkUpcomingSubscriptions(db *database.DB) {
 	emailConfig := email.EmailConfig{
 		SMTPHost:     "smtp.gmail.com",
 		SMTPPort:     587,
-		SMTPUser:     "temuujinn8563@gmail.com",
-		SMTPPassword: "rcgp vvrf ywcq oaur",
-		FromEmail:    "temuujinn8563@gmail.com",
+		SMTPUser:     os.Getenv("SMTP_USER"),
+		SMTPPassword: os.Getenv("SMTP_PASSWORD"),
+		FromEmail:    os.Getenv("SMTP_FROM"),
 	}
 
 	emailService := email.NewEmailService(emailConfig)
