@@ -1,51 +1,42 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import { useAuth } from "@/contexts/AuthContext";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import StatsCard from "@/components/StatsCard";
+import {
+  useDeleteSubMutation,
+  useGetSubsQuery,
+  useGetSubStatsQuery,
+} from "@/services/subsciption";
+import toast from "react-hot-toast";
+import Link from "next/link";
 
 export default function Dashboard() {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [totalMonthly, setTotalMonthly] = useState(0);
-  const { user } = useAuth();
-  const router = useRouter();
+
+  const { data, isLoading } = useGetSubsQuery();
+  const { data: statsData, isLoading: statsIsLoading } = useGetSubStatsQuery();
+
+  const [handleDelete] = useDeleteSubMutation();
 
   useEffect(() => {
-    // Mock data - in a real app, you would fetch this from your API
-    const mockSubscriptions: any[] = [
-      {
-        id: 1,
-        name: "Netflix",
-        price: 15.99,
-        cycle: "monthly",
-        nextPayment: "2023-06-15",
-        category: "entertainment",
-      },
-      {
-        id: 2,
-        name: "Spotify",
-        price: 9.99,
-        cycle: "monthly",
-        nextPayment: "2023-06-20",
-        category: "music",
-      },
-      {
-        id: 3,
-        name: "Adobe Creative Cloud",
-        price: 52.99,
-        cycle: "monthly",
-        nextPayment: "2023-07-01",
-        category: "productivity",
-      },
-    ];
+    if (isLoading || statsIsLoading) {
+      toast.loading("Loading...");
+    } else {
+      toast.remove();
+    }
+  }, [isLoading, statsIsLoading]);
 
-    setSubscriptions(mockSubscriptions);
-    setTotalMonthly(
-      mockSubscriptions.reduce((total, sub) => total + sub.price, 0)
+  const deleteHandler = (id: number) => {
+    toast.promise(
+      async () => {
+        const response = await handleDelete(id);
+      },
+      {
+        loading: "Loading...",
+        success: <b>Success</b>,
+        error: (err) => <b>{err.message}</b>,
+      }
     );
-  }, [user, router]);
-
-  const handleDelete = (id: string) => {
     // setSubscriptions(subscriptions.filter((sub) => sub.id !== id));
   };
 
@@ -55,18 +46,20 @@ export default function Dashboard() {
         <h2 className="text-3xl font-bold text-gray-800 dark:text-white">
           Dashboard
         </h2>
-        <button
-          onClick={() => router.push("/subscriptions/add")}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
-        >
-          + Add Subscription
-        </button>
+        <Link href="/subscriptions/add">
+          <button
+            type="button"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            + Add Subscription
+          </button>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <StatsCard
           title="Total Monthly"
-          value={`$${totalMonthly.toFixed(2)}`}
+          value={`$${(statsData?.totalMonthly || 0).toFixed(2)}`}
           icon={
             <svg
               className="w-6 h-6"
@@ -88,7 +81,7 @@ export default function Dashboard() {
 
         <StatsCard
           title="Active Subscriptions"
-          value={subscriptions.length}
+          value={statsData?.activeCount || 0}
           icon={
             <svg
               className="w-6 h-6"
@@ -110,7 +103,7 @@ export default function Dashboard() {
 
         <StatsCard
           title="Next Payment"
-          value="$15.99"
+          value={`$${(statsData?.nextPayment || 0).toFixed(2)}`}
           icon={
             <svg
               className="w-6 h-6"
@@ -137,27 +130,30 @@ export default function Dashboard() {
           </h3>
         </div>
 
-        {subscriptions.length === 0 ? (
+        {data && data?.length === 0 ? (
           <div className="px-6 py-12 text-center">
             <p className="text-gray-500 dark:text-gray-400 mb-4">
               You don't have any subscriptions yet.
             </p>
-            <button
-              onClick={() => router.push("/add-subscription")}
-              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
-            >
-              Add your first subscription
-            </button>
+            <Link href="/subscriptions/add">
+              <button
+                type="button"
+                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium"
+              >
+                Add your first subscription
+              </button>
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
-            {subscriptions.map((sub) => (
-              <SubscriptionCard
-                key={sub.id}
-                subscription={sub}
-                onDelete={handleDelete}
-              />
-            ))}
+            {data &&
+              data.map((sub) => (
+                <SubscriptionCard
+                  key={sub.id}
+                  subscription={sub}
+                  onDelete={deleteHandler}
+                />
+              ))}
           </div>
         )}
       </div>

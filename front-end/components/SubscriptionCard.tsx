@@ -1,9 +1,10 @@
 // components/SubscriptionCard.tsx
+import moment from "moment";
 import Link from "next/link";
 
 interface SubscriptionCardProps {
   subscription: Subscription;
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
 }
 
 export default function SubscriptionCard({
@@ -37,7 +38,7 @@ export default function SubscriptionCard({
             ${subscription.price}
           </p>
           <p className="text-gray-600 dark:text-gray-400">
-            per {subscription.cycle}
+            per {subscription.billingCycle}
           </p>
         </div>
         <span
@@ -52,20 +53,23 @@ export default function SubscriptionCard({
       <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
         <p className="text-sm text-gray-600 dark:text-gray-400">
           Next payment:{" "}
-          <span className="font-medium">{subscription.nextPayment}</span>
+          <span className="font-medium">
+            {moment(subscription.nextBillingDate).format("YYYY-MM-DD")}
+          </span>
         </p>
       </div>
 
       <div className="mt-4 flex justify-end space-x-2">
         <Link
-          href={`/edit-subscription/${subscription.id}`}
+          href={`/subscriptions/edit/${subscription.id}`}
           className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md text-sm hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
         >
           Edit
         </Link>
         <button
+          type="button"
           onClick={() => onDelete(subscription.id)}
-          className="px-3 py-1 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-md text-sm hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
+          className="cursor-pointer px-3 py-1 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 rounded-md text-sm hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
         >
           Delete
         </button>

@@ -2,6 +2,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 import SubscriptionForm from "@/components/SubscriptionForm";
+import {
+  useGetSubDetailQuery,
+  useUpdateSubMutation,
+} from "@/services/subsciption";
+import toast from "react-hot-toast";
 
 // Mock data - in a real app, you would fetch this from your API based on the ID
 const mockSubscription: any = {
@@ -14,56 +19,50 @@ const mockSubscription: any = {
 };
 
 export default function EditSubscription() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const { user } = useAuth();
   const router = useRouter();
   const { id } = router.query;
 
-  useEffect(() => {
-    if (id) {
-      // In a real app, you would fetch the subscription data based on the ID
-      setSubscription(mockSubscription);
-    }
-  }, [id]);
+  const { data, isLoading } = useGetSubDetailQuery(Number(id), { skip: !id });
 
-  const handleSubmit = async (data: RequestSub) => {
-    setIsLoading(true);
+  const [handleUpdate, { isLoading: updateIsLoading }] = useUpdateSubMutation();
 
-    // In a real app, you would update this in your database via an API call
-    console.log("Updating subscription:", data);
+  const handleSubmit = async (requestData: RequestSub) => {
+    toast.promise(
+      async () => {
+        const response = await handleUpdate({
+          id: Number(id),
+          body: requestData,
+        });
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      router.push("/dashboard");
-    }, 1000);
+        if ("error" in response) {
+          console.error(response.error);
+
+          throw new Error("Failed to update subscription");
+        }
+      },
+      {
+        loading: "Loading...",
+        success: () => {
+          router.push("/dashboard");
+
+          return <b>Success</b>;
+        },
+        error: (err) => <b>{err.message}</b>,
+      }
+    );
   };
 
   const handleCancel = () => {
     router.push("/dashboard");
   };
 
-  if (!user) {
-    router.push("/login");
-    return null;
-  }
-
-  if (!subscription) {
-    return (
-      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-        Loading...
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-md mx-auto">
       <SubscriptionForm
-        initialData={subscription}
+        initialData={data}
         onSubmit={handleSubmit}
         onCancel={handleCancel}
-        isLoading={isLoading}
+        isLoading={isLoading || updateIsLoading}
       />
     </div>
   );

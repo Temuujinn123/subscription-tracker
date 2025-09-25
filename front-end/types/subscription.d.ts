@@ -12,9 +12,16 @@ interface Subscription {
 }
 
 interface RequestSub {
+  id?: number;
   name: string;
   price: number | string;
   billingCycle: string;
   nextBillingDate: string;
   category: string;
+}
+
+interface SubStats {
+  activeCount: number;
+  nextPayment: number;
+  totalMonthly: number;
 }
