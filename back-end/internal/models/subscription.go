@@ -24,3 +24,9 @@ type CreateSubscriptionRequest struct {
 	BillingCycle    string  `json:"billingCycle" validate:"required,oneof=monthly yearly weekly"`
 	NextBillingDate string  `json:"nextBillingDate" validate:"required"`
 }
+
+type SubscriptionStats struct {
+	TotalMonthly float64 `json:"totalMonthly"`
+	ActiveCount  int     `json:"activeCount"`
+	NextPayment  float64 `json:"nextPayment"`
+}

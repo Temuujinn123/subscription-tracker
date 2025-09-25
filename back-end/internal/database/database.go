@@ -62,6 +62,7 @@ func InitDB(cacheService *cache.CacheService) (*DB, error) {
 	CREATE TABLE IF NOT EXISTS subscriptions (
 		id SERIAL PRIMARY KEY,
 		name TEXT NOT NULL,
+		category TEXT NOT NULL,
 		price DECIMAL(10,2) NOT NULL,
 		billing_cycle TEXT NOT NULL,
 		next_billing_date DATE NOT NULL,
@@ -89,11 +90,12 @@ func (db *DB) Close() error {
 	return db.DB.Close()
 }
 
-func (db *DB) GetAllSubscriptions() ([]models.Subscription, error) {
+func (db *DB) GetUserSubscriptions(userId int) ([]models.Subscription, error) {
 	query := `
 			SELECT 
 				s.id, 
 				s.name, 
+				s.category, 
 				s.price, 
 				s.billing_cycle, 
 				s.next_billing_date, 
@@ -104,20 +106,22 @@ func (db *DB) GetAllSubscriptions() ([]models.Subscription, error) {
 			FROM subscriptions s
 			LEFT JOIN users u
 			ON s.user_id = u.id
+			WHERE s.user_id = $1
 			`
 
-	rows, err := db.Query(query)
+	rows, err := db.Query(query, userId)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var subscriptions []models.Subscription
+	subscriptions := []models.Subscription{}
 	for rows.Next() {
 		var sub models.Subscription
 		err := rows.Scan(
 			&sub.ID,
 			&sub.Name,
+			&sub.Category,
 			&sub.Price,
 			&sub.BillingCycle,
 			&sub.NextBillingDate,
@@ -140,6 +144,7 @@ func (db *DB) GetSubscriptionByID(id int) (*models.Subscription, error) {
 			SELECT 
 				s.id, 
 				s.name, 
+				s.category, 
 				s.price, 
 				s.billing_cycle, 
 				s.next_billing_date, 
@@ -158,12 +163,14 @@ func (db *DB) GetSubscriptionByID(id int) (*models.Subscription, error) {
 	err := row.Scan(
 		&sub.ID,
 		&sub.Name,
+		&sub.Category,
 		&sub.Price,
 		&sub.BillingCycle,
 		&sub.NextBillingDate,
 		&sub.IsActive,
 		&sub.CreatedAt,
 		&sub.UpdatedAt,
+		&sub.Email,
 	)
 	if err != nil {
 		return nil, err
@@ -173,14 +180,15 @@ func (db *DB) GetSubscriptionByID(id int) (*models.Subscription, error) {
 }
 
 func (db *DB) CreateSubscription(req models.CreateSubscriptionRequest, userId int) (*models.Subscription, error) {
-	query := `INSERT INTO subscriptions (name, price, billing_cycle, next_billing_date, user_id)
-	          VALUES ($1, $2, $3, $4, $5) 
-	          RETURNING id, name, price, billing_cycle, next_billing_date, is_active, created_at, updated_at`
+	query := `INSERT INTO subscriptions (name, category, price, billing_cycle, next_billing_date, user_id)
+	          VALUES ($1, $2, $3, $4, $5, $6) 
+	          RETURNING id, name, category, price, billing_cycle, next_billing_date, is_active, created_at, updated_at`
 
 	var sub models.Subscription
 	err := db.QueryRow(
 		query,
 		req.Name,
+		req.Category,
 		req.Price,
 		req.BillingCycle,
 		req.NextBillingDate,
@@ -188,6 +196,7 @@ func (db *DB) CreateSubscription(req models.CreateSubscriptionRequest, userId in
 	).Scan(
 		&sub.ID,
 		&sub.Name,
+		&sub.Category,
 		&sub.Price,
 		&sub.BillingCycle,
 		&sub.NextBillingDate,
@@ -211,18 +220,20 @@ func (db *DB) UpdateSubscription(id int, req models.CreateSubscriptionRequest) (
 	query := `UPDATE subscriptions 
 			  SET 
 			  	name = $1, 
-				price = $2, 
-				billing_cycle = $3, 
-				next_billing_date = $4, 
+				category = $2,
+				price = $3, 
+				billing_cycle = $4, 
+				next_billing_date = $5, 
 				updated_at = CURRENT_TIMESTAMP 
-	          WHERE id = $5 
-			  RETURNING id, name, price, billing_cycle, next_billing_date, is_active, created_at, updated_at`
+	          WHERE id = $6 
+			  RETURNING id, name, category, price, billing_cycle, next_billing_date, is_active, created_at, updated_at`
 
 	var sub models.Subscription
-	err := db.QueryRow(query, req.Name, req.Price, req.BillingCycle, req.NextBillingDate, id).
+	err := db.QueryRow(query, req.Name, req.Category, req.Price, req.BillingCycle, req.NextBillingDate, id).
 		Scan(
 			&sub.ID,
 			&sub.Name,
+			&sub.Category,
 			&sub.Price,
 			&sub.BillingCycle,
 			&sub.NextBillingDate,
@@ -259,6 +270,7 @@ func (db *DB) GetUpcomingSubscriptions() ([]models.Subscription, error) {
 		SELECT 
 			s.id, 
 			s.name, 
+			s.category, 
 			s.price, 
 			s.billing_cycle, 
 			s.next_billing_date, 
@@ -285,6 +297,7 @@ func (db *DB) GetUpcomingSubscriptions() ([]models.Subscription, error) {
 		err := rows.Scan(
 			&sub.ID,
 			&sub.Name,
+			&sub.Category,
 			&sub.Price,
 			&sub.BillingCycle,
 			&sub.NextBillingDate,
@@ -300,6 +313,35 @@ func (db *DB) GetUpcomingSubscriptions() ([]models.Subscription, error) {
 	}
 
 	return subscriptions, nil
+}
+
+// Statistic methods
+func (db *DB) GetUserSubscriptionsStats(userId int) (*models.SubscriptionStats, error) {
+	query := `
+		SELECT 
+			(
+				SELECT SUM(s.price) from subscriptions s WHERE s.user_id = $1 and s.is_active = 'true' 
+			) as total_monthly,
+			(
+				SELECT COUNT(s.*) from subscriptions s WHERE s.user_id = $1 and s.is_active = 'true'
+			) as active_count,
+			(
+				SELECT s.price from subscriptions s WHERE s.user_id = $1 and s.is_active = 'true' ORDER BY s.next_billing_date LIMIT 1
+			) as next_payment
+	`
+
+	row := db.QueryRow(query, userId)
+	var stats models.SubscriptionStats
+	err := row.Scan(
+		&stats.TotalMonthly,
+		&stats.ActiveCount,
+		&stats.NextPayment,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &stats, nil
 }
 
 // User-related methods
