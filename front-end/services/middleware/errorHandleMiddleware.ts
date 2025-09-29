@@ -8,7 +8,6 @@ import {
 
 import { Router } from "next/router";
 
-// Store router instance (you can pass this from your app)
 let router: Router | null = null;
 
 export const setRouter = (nextRouter: Router) => {
