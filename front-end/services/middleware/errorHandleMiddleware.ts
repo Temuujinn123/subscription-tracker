@@ -1,4 +1,3 @@
-// lib/store/middleware/errorHandlerMiddleware.ts
 import {
   BaseQueryFn,
   FetchArgs,
