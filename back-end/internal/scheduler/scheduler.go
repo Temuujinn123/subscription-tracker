@@ -12,8 +12,8 @@ import (
 func InitScheduler(db *database.DB) {
 	c := cron.New()
 
-	// Check for upcoming subscriptions every day at 9 AM
-	c.AddFunc("0 9 * * *", func() {
+	// Check for upcoming subscriptions every day at 12 AM
+	c.AddFunc("50 18 * * *", func() {
 		log.Println("Checking for upcoming subscriptions...")
 		checkUpcomingSubscriptions(db)
 	})
@@ -29,7 +29,7 @@ func checkUpcomingSubscriptions(db *database.DB) {
 		return
 	}
 
-	// Initialize email service (configure with your SMTP settings)
+	// Initialize email service
 	emailConfig := email.EmailConfig{
 		SMTPHost:     "smtp.gmail.com",
 		SMTPPort:     587,

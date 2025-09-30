@@ -57,6 +57,10 @@ func CreateSubscription(db models.Database) http.HandlerFunc {
 
 		user := r.Context().Value("user").(*models.User)
 
+		// req.NextBillingDate = req.NextBillingDate[0 : len(req.NextBillingDate)-2]
+
+		println(req.NextBillingDate)
+
 		subscription, err := db.CreateSubscription(req, user.ID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -103,6 +107,8 @@ func UpdateSubscription(db models.Database) http.HandlerFunc {
 			http.Error(w, "Invalid JSON", http.StatusBadRequest)
 			return
 		}
+
+		println(req.NextBillingDate)
 
 		subscription, err := db.UpdateSubscription(id, req)
 		if err != nil {

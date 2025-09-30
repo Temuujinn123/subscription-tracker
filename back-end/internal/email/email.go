@@ -24,7 +24,7 @@ type EmailService struct {
 func NewEmailService(config EmailConfig) *EmailService {
 	return &EmailService{
 		config: config,
-		dialer: gomail.NewDialer(config.SMTPHost, config.SMTPPort, 
+		dialer: gomail.NewDialer(config.SMTPHost, config.SMTPPort,
 			config.SMTPUser, config.SMTPPassword),
 	}
 }
@@ -40,8 +40,8 @@ func (es *EmailService) SendSubscriptionAlert(sub models.Subscription) error {
 
 	Thank you,
 	Subscription Tracker
-	`, sub.Name, sub.NextBillingDate.Format("2006-01-02"), 
-	   sub.Price, sub.BillingCycle)
+	`, sub.Name, sub.NextBillingDate.Format("2006-01-02"),
+		sub.Price, sub.BillingCycle)
 
 	m := gomail.NewMessage()
 	m.SetHeader("From", es.config.FromEmail)
