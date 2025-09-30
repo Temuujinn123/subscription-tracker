@@ -27,7 +27,7 @@ export default function StatsCard({
           <p className="text-3xl font-bold text-gray-800 dark:text-white">
             {value}
           </p>
-          {trend && (
+          {/* {trend && (
             <p
               className={`text-sm mt-2 ${
                 trend.isPositive
@@ -38,7 +38,7 @@ export default function StatsCard({
               {trend.isPositive ? "↑" : "↓"} {Math.abs(trend.value)}% from last
               month
             </p>
-          )}
+          )} */}
         </div>
         <div className="p-3 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300">
           {icon}

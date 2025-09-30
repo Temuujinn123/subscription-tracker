@@ -4,21 +4,51 @@ import { errorHandlerMiddleware } from "./middleware/errorHandleMiddleware";
 export const subscriptionApi = createApi({
   reducerPath: "subscriptionApi",
   baseQuery: errorHandlerMiddleware,
+  tagTypes: ["sub"],
   endpoints: (build) => ({
+    getSubs: build.query<Subscription[], void>({
+      query: () => "subscriptions",
+      providesTags: ["sub"],
+    }),
+    getSubDetail: build.query<Subscription, number>({
+      query: (id) => `subscriptions/${id}`,
+      providesTags: ["sub"],
+    }),
     createSub: build.mutation<Subscription, RequestSub>({
-      query: ({ name, price, billingCycle, nextBillingDate, category }) => ({
+      query: (requestSub) => ({
         url: "subscriptions",
         method: "POST",
-        body: {
-          name,
-          price,
-          billingCycle,
-          nextBillingDate,
-          category,
-        },
+        body: requestSub,
       }),
+      invalidatesTags: ["sub"],
+    }),
+    updateSub: build.mutation<Subscription, { id: number; body: RequestSub }>({
+      query: (requestSub) => ({
+        url: `subscriptions/${requestSub.id}`,
+        method: "PUT",
+        body: requestSub.body,
+      }),
+      invalidatesTags: ["sub"],
+    }),
+    deleteSub: build.mutation<void, number>({
+      query: (id) => ({
+        url: `subscriptions/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["sub"],
+    }),
+    getSubStats: build.query<SubStats, void>({
+      query: () => "subscriptions/stats",
+      providesTags: ["sub"],
     }),
   }),
 });
 
-export const { useCreateSubMutation } = subscriptionApi;
+export const {
+  useGetSubsQuery,
+  useGetSubDetailQuery,
+  useCreateSubMutation,
+  useUpdateSubMutation,
+  useDeleteSubMutation,
+  useGetSubStatsQuery,
+} = subscriptionApi;

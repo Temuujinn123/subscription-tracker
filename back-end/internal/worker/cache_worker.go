@@ -29,10 +29,10 @@ func (w *CacheWorker) Start() {
 	log.Println("Starting cache worker...")
 
 	// Initial cache warm-up
-	w.warmUpCache()
+	// w.warmUpCache()
 
 	// Start periodic cache refresh
-	go w.periodicCacheRefresh(5 * time.Minute) // Refresh every 5 minutes
+	// go w.periodicCacheRefresh(5 * time.Minute) // Refresh every 5 minutes
 
 	// Start cache invalidation listener
 	go w.cacheInvalidationListener()
@@ -43,21 +43,21 @@ func (w *CacheWorker) Stop() {
 	log.Println("Cache worker stopped")
 }
 
-func (w *CacheWorker) warmUpCache() {
-	log.Println("Warming up cache...")
+// func (w *CacheWorker) warmUpCache() {
+// 	log.Println("Warming up cache...")
 
-	// Cache all subscriptions
-	subscriptions, err := w.db.GetAllSubscriptions()
-	if err != nil {
-		log.Printf("Failed to warm up subscriptions cache: %v", err)
-		return
-	}
+// 	// Cache all subscriptions
+// 	subscriptions, err := w.db.GetAllSubscriptions()
+// 	if err != nil {
+// 		log.Printf("Failed to warm up subscriptions cache: %v", err)
+// 		return
+// 	}
 
-	err = w.cacheService.CacheAllSubscriptions(subscriptions)
-	if err != nil {
-		log.Printf("Failed to cache subscriptions during warm-up: %v", err)
-	}
-}
+// 	err = w.cacheService.CacheAllSubscriptions(subscriptions)
+// 	if err != nil {
+// 		log.Printf("Failed to cache subscriptions during warm-up: %v", err)
+// 	}
+// }
 
 func (w *CacheWorker) periodicCacheRefresh(interval time.Duration) {
 	ticker := time.NewTicker(interval)
@@ -68,30 +68,30 @@ func (w *CacheWorker) periodicCacheRefresh(interval time.Duration) {
 		case <-w.ctx.Done():
 			return
 		case <-ticker.C:
-			w.refreshCache()
+			// w.refreshCache()
 		}
 	}
 }
 
-func (w *CacheWorker) refreshCache() {
-	log.Println("Refreshing cache...")
+// func (w *CacheWorker) refreshCache() {
+// 	log.Println("Refreshing cache...")
 
-	// Get fresh data from database
-	subscriptions, err := w.db.GetAllSubscriptions()
-	if err != nil {
-		log.Printf("Failed to refresh subscriptions cache: %v", err)
-		return
-	}
+// 	// Get fresh data from database
+// 	subscriptions, err := w.db.GetAllSubscriptions()
+// 	if err != nil {
+// 		log.Printf("Failed to refresh subscriptions cache: %v", err)
+// 		return
+// 	}
 
-	// Update cache
-	err = w.cacheService.CacheAllSubscriptions(subscriptions)
-	if err != nil {
-		log.Printf("Failed to update subscriptions cache: %v", err)
-		return
-	}
+// 	// Update cache
+// 	err = w.cacheService.CacheAllSubscriptions(subscriptions)
+// 	if err != nil {
+// 		log.Printf("Failed to update subscriptions cache: %v", err)
+// 		return
+// 	}
 
-	log.Printf("Cache refreshed successfully. Cached %d subscriptions", len(subscriptions))
-}
+// 	log.Printf("Cache refreshed successfully. Cached %d subscriptions", len(subscriptions))
+// }
 
 func (w *CacheWorker) cacheInvalidationListener() {
 	// This is a simplified version. In production, you might want to use:
@@ -123,7 +123,7 @@ func (w *CacheWorker) checkForDatabaseChanges(since time.Time) {
 
 	// For demonstration, we'll just refresh the cache if it's been a while
 	// or if we detect significant changes
-	w.refreshCache()
+	// w.refreshCache()
 }
 
 // Manual cache invalidation methods

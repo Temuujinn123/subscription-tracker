@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 interface SubscriptionFormProps {
@@ -21,6 +21,18 @@ export default function SubscriptionForm({
     nextBillingDate: initialData?.nextBillingDate || "",
     category: initialData?.category || "entertainment",
   });
+
+  useEffect(() => {
+    if (!initialData) return;
+
+    setFormData({
+      name: initialData?.name || "",
+      price: initialData?.price || "",
+      billingCycle: initialData?.billingCycle || "monthly",
+      nextBillingDate: initialData?.nextBillingDate || "",
+      category: initialData?.category || "entertainment",
+    });
+  }, [initialData]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -98,6 +110,11 @@ export default function SubscriptionForm({
               className="block w-full pl-7 pr-12 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white"
               value={formData.price}
               onChange={handleChange}
+              onWheel={(e) => {
+                e.currentTarget.blur();
+
+                e.stopPropagation();
+              }}
             />
           </div>
         </div>

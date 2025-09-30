@@ -10,7 +10,8 @@ export default function AddSubscription() {
   const { user } = useAuth();
   const router = useRouter();
 
-  const [handleCreateSub] = useCreateSubMutation();
+  const [handleCreateSub, { isLoading: createIsLoading }] =
+    useCreateSubMutation();
 
   const handleSubmit = async (data: RequestSub) => {
     setIsLoading(true);
@@ -53,7 +54,7 @@ export default function AddSubscription() {
       <SubscriptionForm
         onSubmit={handleSubmit}
         onCancel={handleCancel}
-        isLoading={isLoading}
+        isLoading={isLoading || createIsLoading}
       />
     </div>
   );

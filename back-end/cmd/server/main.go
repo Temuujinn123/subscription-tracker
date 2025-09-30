@@ -74,23 +74,25 @@ func main() {
 
 	// Set up routes
 	router := mux.NewRouter()
+	basePath := "/api/v1"
 
 	// Public routes
-	router.HandleFunc("/api/v1/register", handlers.Register(db)).Methods("POST")
-	router.HandleFunc("/api/v1/login", handlers.Login(db)).Methods("POST")
-	router.HandleFunc("/api/v1/auth/google", handlers.AuthGoogle(db, googleOauthConfig)).Methods("POST")
+	router.HandleFunc(basePath+"/register", handlers.Register(db)).Methods("POST")
+	router.HandleFunc(basePath+"/login", handlers.Login(db)).Methods("POST")
+	router.HandleFunc(basePath+"/auth/google", handlers.AuthGoogle(db, googleOauthConfig)).Methods("POST")
 
 	// Protected routes (require authentication)
 	authRouter := router.PathPrefix("/").Subrouter()
 	authRouter.Use(middleware.AuthMiddleware(db))
 
 	// Porotected routes
-	authRouter.HandleFunc("/api/v1/detail", handlers.GetUserDetail(db)).Methods("GET")
-	authRouter.HandleFunc("/api/v1/subscriptions", handlers.GetSubscriptions(db, cacheService)).Methods("GET")
-	authRouter.HandleFunc("/api/v1/subscriptions", handlers.CreateSubscription(db)).Methods("POST")
-	authRouter.HandleFunc("/api/v1/subscriptions/{id}", handlers.GetSubscription(db)).Methods("GET")
-	authRouter.HandleFunc("/api/v1/subscriptions/{id}", handlers.UpdateSubscription(db)).Methods("PUT")
-	authRouter.HandleFunc("/api/v1/subscriptions/{id}", handlers.DeleteSubscription(db)).Methods("DELETE")
+	authRouter.HandleFunc(basePath+"/subscriptions/stats", handlers.GetUserSubscriptionsStats(db)).Methods("GET")
+	authRouter.HandleFunc(basePath+"/detail", handlers.GetUserDetail(db)).Methods("GET")
+	authRouter.HandleFunc(basePath+"/subscriptions", handlers.GetSubscriptions(db, cacheService)).Methods("GET")
+	authRouter.HandleFunc(basePath+"/subscriptions", handlers.CreateSubscription(db)).Methods("POST")
+	authRouter.HandleFunc(basePath+"/subscriptions/{id}", handlers.GetSubscription(db)).Methods("GET")
+	authRouter.HandleFunc(basePath+"/subscriptions/{id}", handlers.UpdateSubscription(db)).Methods("PUT")
+	authRouter.HandleFunc(basePath+"/subscriptions/{id}", handlers.DeleteSubscription(db)).Methods("DELETE")
 
 	// Cache management endpoints (for debugging)
 	if cacheService != nil {
