@@ -1,5 +1,3 @@
-// components/SubscriptionCard.tsx
-import moment from "moment";
 import Link from "next/link";
 
 interface SubscriptionCardProps {
@@ -54,7 +52,7 @@ export default function SubscriptionCard({
         <p className="text-sm text-gray-600 dark:text-gray-400">
           Next payment:{" "}
           <span className="font-medium">
-            {moment(subscription.nextBillingDate).format("YYYY-MM-DD")}
+            {subscription.nextBillingDate?.split("T")[0]}
           </span>
         </p>
       </div>

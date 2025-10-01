@@ -1,13 +1,11 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import GoogleSignIn from "./GoogleSignIn";
-import { useAuth } from "@/contexts/AuthContext";
 
 interface AuthFormProps {
   title: string;
   subtitle: string;
   alternateLink: string;
-  alternateText: string;
   alternateLinkText: string;
   onSubmit: (e: React.FormEvent) => void;
   children: ReactNode;
@@ -18,14 +16,11 @@ export default function AuthForm({
   title,
   subtitle,
   alternateLink,
-  alternateText,
   alternateLinkText,
   onSubmit,
   children,
   isLoading = false,
 }: AuthFormProps) {
-  const { signIn } = useAuth();
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
       <div className="max-w-md w-full space-y-8">

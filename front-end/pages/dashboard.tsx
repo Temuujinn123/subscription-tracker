@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import StatsCard from "@/components/StatsCard";
 import {
@@ -10,9 +10,6 @@ import toast from "react-hot-toast";
 import Link from "next/link";
 
 export default function Dashboard() {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [totalMonthly, setTotalMonthly] = useState(0);
-
   const { data, isLoading } = useGetSubsQuery();
   const { data: statsData, isLoading: statsIsLoading } = useGetSubStatsQuery();
 
@@ -30,6 +27,16 @@ export default function Dashboard() {
     toast.promise(
       async () => {
         const response = await handleDelete(id);
+
+        if (response.error) {
+          console.error("Failed to register: ", response.error);
+
+          if ("data" in response.error) {
+            throw new Error(String(response.error.data));
+          }
+
+          throw new Error("Failed to register.");
+        }
       },
       {
         loading: "Loading...",
@@ -37,7 +44,6 @@ export default function Dashboard() {
         error: (err) => <b>{err.message}</b>,
       }
     );
-    // setSubscriptions(subscriptions.filter((sub) => sub.id !== id));
   };
 
   return (
@@ -76,7 +82,7 @@ export default function Dashboard() {
               />
             </svg>
           }
-          trend={{ value: 5.2, isPositive: false }}
+          // trend={{ value: 5.2, isPositive: false }}
         />
 
         <StatsCard
@@ -98,7 +104,7 @@ export default function Dashboard() {
               />
             </svg>
           }
-          trend={{ value: 12.5, isPositive: true }}
+          // trend={{ value: 12.5, isPositive: true }}
         />
 
         <StatsCard
@@ -133,7 +139,7 @@ export default function Dashboard() {
         {data && data?.length === 0 ? (
           <div className="px-6 py-12 text-center">
             <p className="text-gray-500 dark:text-gray-400 mb-4">
-              You don't have any subscriptions yet.
+              You don&apos;t have any subscriptions yet.
             </p>
             <Link href="/subscriptions/add">
               <button

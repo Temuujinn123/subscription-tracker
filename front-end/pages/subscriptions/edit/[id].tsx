@@ -1,22 +1,10 @@
-import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { useAuth } from "@/contexts/AuthContext";
 import SubscriptionForm from "@/components/SubscriptionForm";
 import {
   useGetSubDetailQuery,
   useUpdateSubMutation,
 } from "@/services/subsciption";
 import toast from "react-hot-toast";
-
-// Mock data - in a real app, you would fetch this from your API based on the ID
-const mockSubscription: any = {
-  id: 1,
-  name: "Netflix",
-  price: 15.99,
-  cycle: "monthly",
-  nextPayment: "2023-06-15",
-  category: "entertainment",
-};
 
 export default function EditSubscription() {
   const router = useRouter();
@@ -34,7 +22,7 @@ export default function EditSubscription() {
           body: requestData,
         });
 
-        if ("error" in response) {
+        if (response.error) {
           console.error(response.error);
 
           throw new Error("Failed to update subscription");

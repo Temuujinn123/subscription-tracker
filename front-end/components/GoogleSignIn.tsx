@@ -1,6 +1,5 @@
 import { useAuthGoogleMutation } from "@/services/user";
 import { useGoogleLogin } from "@react-oauth/google";
-import { useRouter } from "next/navigation";
 
 interface GoogleSignInProps {
   buttonText?: string;
@@ -9,7 +8,6 @@ interface GoogleSignInProps {
 const GoogleSignIn = ({
   buttonText = "Sign in with Google",
 }: GoogleSignInProps) => {
-  const router = useRouter();
   const [handleAuthGoogle] = useAuthGoogleMutation();
 
   const login = useGoogleLogin({
