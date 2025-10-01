@@ -60,7 +60,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   ) => {
     const response = await handleRegister({ name, email, password });
 
-    if ("error" in response && response.error) {
+    if (response.error && response.error) {
       console.error("Failed to register: ", response.error);
 
       if ("data" in response.error) {
@@ -87,7 +87,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signInHandler = async (email: string, password: string) => {
     const response = await handleLogin({ email, password });
 
-    if ("error" in response) {
+    if (response.error) {
       console.error("Failed to login: ", response.error);
 
       throw new Error("Failed to login");

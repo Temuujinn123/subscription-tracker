@@ -3,7 +3,7 @@ import { useAuth } from "../contexts/AuthContext";
 import StatsCard from "../components/StatsCard";
 
 export default function Home() {
-  // const { user } = useAuth();
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-200">
@@ -18,7 +18,7 @@ export default function Home() {
             before your subscriptions renew and take control of your finances.
           </p>
           <div className="space-x-4">
-            {false ? (
+            {user ? (
               <Link
                 href="/dashboard"
                 className="bg-indigo-600 text-white px-6 py-3 rounded-lg text-lg font-medium hover:bg-indigo-700 transition-colors"
@@ -211,7 +211,7 @@ export default function Home() {
             Join thousands of users who are saving money and avoiding surprise
             charges with SubTrack.
           </p>
-          {!false && (
+          {!user && (
             <Link
               href="/register"
               className="bg-indigo-600 text-white px-8 py-4 rounded-lg text-lg font-medium hover:bg-indigo-700 transition-colors"
@@ -224,4 +224,3 @@ export default function Home() {
     </div>
   );
 }
-4;

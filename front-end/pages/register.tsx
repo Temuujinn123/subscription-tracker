@@ -44,6 +44,7 @@ export default function Register() {
     try {
       await signUp(name.trim(), email.trim(), password.trim());
     } catch (error) {
+      console.error(error);
       setError("Failed to create an account. Please try again.");
     } finally {
       setIsLoading(false);
@@ -56,7 +57,6 @@ export default function Register() {
         title="Create your account"
         subtitle="Already have an account?"
         alternateLink="/login"
-        alternateText="Already have an account?"
         alternateLinkText="Sign in"
         onSubmit={handleSubmit}
         isLoading={isLoading}

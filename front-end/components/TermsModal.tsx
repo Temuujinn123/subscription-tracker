@@ -110,9 +110,9 @@ const TermsModal = ({
               </div>
               <p className="text-gray-700 leading-relaxed">
                 By accessing or using the Subscription Tracker website
-                ("Service"), you agree to be bound by these Terms and Conditions
-                ("Terms"). If you do not agree to these Terms, please do not use
-                our Service.
+                (&quot;Service&quot;), you agree to be bound by these Terms and
+                Conditions (&quot;Terms&quot;). If you do not agree to these
+                Terms, please do not use our Service.
               </p>
             </section>
 
@@ -305,9 +305,9 @@ const TermsModal = ({
                   </div>
                   <div className="ml-3">
                     <p className="text-sm text-red-700">
-                      The Service is provided "as is" without warranties. We
-                      implement security measures but cannot guarantee absolute
-                      prevention of data breaches.
+                      The Service is provided &quot;as is&quot; without
+                      warranties. We implement security measures but cannot
+                      guarantee absolute prevention of data breaches.
                     </p>
                   </div>
                 </div>

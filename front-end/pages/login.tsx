@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useRouter } from "next/router";
 import { useAuth } from "@/contexts/AuthContext";
 import AuthForm from "@/components/AuthForm";
 import FormInput from "@/components/FormInput";
@@ -38,7 +37,6 @@ export default function Login() {
       title="Sign in to your account"
       subtitle="Don't have an account?"
       alternateLink="/register"
-      alternateText="Don't have an account?"
       alternateLinkText="Sign up"
       onSubmit={handleSubmit}
       isLoading={isLoading}

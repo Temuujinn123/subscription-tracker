@@ -28,7 +28,7 @@ export default function AddSubscription() {
   const createSubHandler = async (data: RequestSub) => {
     const response = await handleCreateSub(data);
 
-    if ("error" in response && response.error) {
+    if (response.error && response.error) {
       console.error("Failed to create sub: ", response.error);
 
       if ("data" in response.error) {

@@ -5,18 +5,18 @@ interface StatsCardProps {
   title: string;
   value: string | number;
   icon: ReactNode;
-  trend?: {
-    value: number;
-    isPositive: boolean;
-  };
+  // trend?: {
+  //   value: number;
+  //   isPositive: boolean;
+  // };
 }
 
 export default function StatsCard({
   title,
   value,
   icon,
-  trend,
-}: StatsCardProps) {
+}: // trend,
+StatsCardProps) {
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md transition-colors duration-200">
       <div className="flex justify-between items-start">
