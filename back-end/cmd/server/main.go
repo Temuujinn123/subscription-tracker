@@ -65,7 +65,7 @@ func main() {
 
 	// GoogleOAuth
 	googleOauthConfig := &oauth2.Config{
-		RedirectURL:  "http://localhost:3000", // Your frontend URL
+		RedirectURL:  os.Getenv("GOOGLE_REDIRECT_URL"),
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
