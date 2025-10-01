@@ -114,7 +114,7 @@ func main() {
 
 	// Configure CORS
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000", "https://subscription-tracker-6l63s08l4-temuujinn123s-projects.vercel.app/"},
+		AllowedOrigins:   []string{"http://localhost:3000", "https://subscription-tracker-6l63s08l4-temuujinn123s-projects.vercel.app", "https://subscription-tracker-gamma.vercel.app"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization", "X-Requested-With"},
 		AllowCredentials: true,
