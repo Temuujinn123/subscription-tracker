@@ -117,6 +117,8 @@ func AuthGoogle(db models.Database, googleOauthConfig *oauth2.Config) http.Handl
 		// Exchange authorization code for tokens
 		googleToken, err := googleOauthConfig.Exchange(context.Background(), req.Code)
 		if err != nil {
+			println(err)
+
 			http.Error(w, "Failed to exchange token", http.StatusBadRequest)
 			return
 		}
