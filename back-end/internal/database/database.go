@@ -350,7 +350,7 @@ func (db *DB) CreateUser(user models.User) (*models.User, error) {
 	query := `
 		INSERT INTO users (email, password_hash, name, third_party)
 		VALUES ($1, $2, $3, $4)
-		RETURNING id, email, name, created_at, updated_at
+		RETURNING id, email, name, third_party, created_at, updated_at
 	`
 
 	var currentUser models.User
@@ -364,6 +364,7 @@ func (db *DB) CreateUser(user models.User) (*models.User, error) {
 		&currentUser.ID,
 		&currentUser.Email,
 		&currentUser.Name,
+		&currentUser.ThirdParty,
 		&currentUser.UpdatedAt,
 		&currentUser.CreatedAt,
 	)
@@ -410,6 +411,7 @@ func (db *DB) GetUserByEmail(email string) (*models.User, error) {
 			name, 
 			password_hash,
 			email, 
+			third_party, 
 			created_at, 
 			updated_at
 		FROM users
@@ -425,6 +427,7 @@ func (db *DB) GetUserByEmail(email string) (*models.User, error) {
 		&user.Name,
 		&user.PasswordHash,
 		&user.Email,
+		&user.ThirdParty,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
