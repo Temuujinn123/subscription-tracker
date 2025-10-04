@@ -11,11 +11,14 @@ import {
   useEffect,
   useState,
   ReactNode,
+  Dispatch,
+  SetStateAction,
 } from "react";
 import toast from "react-hot-toast";
 
 interface AuthContextType {
   user: User | undefined;
+  setUser: Dispatch<SetStateAction<User | undefined>>;
   signUp: (name: string, email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -106,6 +109,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const value = {
     user,
+    setUser,
     signUp,
     signIn,
     logout,
