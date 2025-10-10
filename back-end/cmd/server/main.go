@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
+
 	"subscription-tracker/internal/cache"
 	"subscription-tracker/internal/database"
 	"subscription-tracker/internal/handlers"
@@ -11,7 +13,6 @@ import (
 	"subscription-tracker/internal/redis"
 	"subscription-tracker/internal/scheduler"
 	"subscription-tracker/internal/worker"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -80,6 +81,7 @@ func main() {
 	router.HandleFunc(basePath+"/register", handlers.Register(db)).Methods("POST")
 	router.HandleFunc(basePath+"/login", handlers.Login(db)).Methods("POST")
 	router.HandleFunc(basePath+"/auth/google", handlers.AuthGoogle(db, googleOauthConfig)).Methods("POST")
+	router.HandleFunc(basePath+"/refresh", handlers.GenerateAccessToken(db)).Methods("POST")
 
 	// Protected routes (require authentication)
 	authRouter := router.PathPrefix("/").Subrouter()

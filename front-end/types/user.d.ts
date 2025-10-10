@@ -11,3 +11,8 @@ interface AuthResult {
   token: string;
   user: User;
 }
+
+interface RefreshResult {
+  message: string;
+  token: string;
+}

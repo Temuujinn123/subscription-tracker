@@ -5,13 +5,9 @@ import {
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query";
 
-import { Router } from "next/router";
-
-let router: Router | null = null;
-
-export const setRouter = (nextRouter: Router) => {
-  router = nextRouter;
-};
+import { RootState } from "../store";
+import { userApi } from "../user";
+import { setAuthData } from "../authSlice";
 
 export const errorHandlerMiddleware: BaseQueryFn<
   string | FetchArgs,
@@ -20,8 +16,10 @@ export const errorHandlerMiddleware: BaseQueryFn<
 > = async (args, api, extraOptions) => {
   const result = await fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_API_URL,
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem("token");
+    prepareHeaders: (headers, { getState }) => {
+      const state = getState() as RootState;
+      const { token } = state.auth;
+
       headers.set("authorization", `Bearer ${token}`);
 
       return headers;
@@ -33,6 +31,45 @@ export const errorHandlerMiddleware: BaseQueryFn<
 
     switch (result.meta?.response?.status) {
       case 401:
+        console.log(api.endpoint);
+        if (api.endpoint === "getAccessToken") {
+          if (
+            !window.location.pathname.includes("/subscriptions") &&
+            !window.location.pathname.includes("/dashboard")
+          )
+            break;
+
+          window.location.href = "/login";
+
+          break;
+        }
+
+        const response = await api.dispatch(
+          userApi.endpoints.getAccessToken.initiate(),
+        );
+
+        const accessToken = response?.data?.token;
+
+        if (accessToken) {
+          api.dispatch(setAuthData({ token: accessToken }));
+
+          const response = await fetchBaseQuery({
+            baseUrl: process.env.NEXT_PUBLIC_API_URL,
+            prepareHeaders: (headers, { getState }) => {
+              const state = getState() as RootState;
+              const { token } = state.auth;
+
+              headers.set("authorization", `Bearer ${token}`);
+
+              return headers;
+            },
+          })(args, api, extraOptions);
+
+          console.log(response);
+
+          return response;
+        }
+
         if (
           !window.location.pathname.includes("/subscriptions") &&
           !window.location.pathname.includes("/dashboard")

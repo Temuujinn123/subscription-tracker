@@ -1,9 +1,13 @@
-// context/AuthContext.tsx
+import { setAuthData } from "@/services/authSlice";
+import { RootState } from "@/services/store";
 import {
+  useAuthGoogleMutation,
+  useGetAccessTokenQuery,
   useGetUserDetailQuery,
   useLoginMutation,
   useRegisterMutation,
 } from "@/services/user";
+import { CodeResponse } from "@react-oauth/google";
 import { useRouter } from "next/router";
 import {
   createContext,
@@ -15,12 +19,16 @@ import {
   SetStateAction,
 } from "react";
 import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
 
 interface AuthContextType {
   user: User | undefined;
   setUser: Dispatch<SetStateAction<User | undefined>>;
   signUp: (name: string, email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  googleAuthLoginHandler: (
+    tokenResponse: Omit<CodeResponse, "error">,
+  ) => Promise<void>;
   logout: () => void;
 }
 
@@ -31,18 +39,27 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
+  const { data } = useGetAccessTokenQuery(undefined, {});
+
   const [handleLogin] = useLoginMutation();
   const [handleRegister] = useRegisterMutation();
+  const dispatch = useDispatch();
+  const { token } = useSelector((state: RootState) => state.auth);
 
   const router = useRouter();
+
+  useEffect(() => {
+    if (data) {
+      dispatch(setAuthData({ token: data.token }));
+    }
+  }, [dispatch, data]);
 
   const [user, setUser] = useState<User | undefined>(undefined);
 
   const { data: userDetail } = useGetUserDetailQuery(undefined, {
-    skip:
-      (typeof window !== "undefined" && !localStorage.getItem("token")) ||
-      !!user,
+    skip: !!user || (!token && token != ""),
   });
+  const [handleAuthGoogle] = useAuthGoogleMutation();
 
   useEffect(() => {
     setUser(userDetail);
@@ -59,7 +76,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signUpHandler = async (
     name: string,
     email: string,
-    password: string
+    password: string,
   ) => {
     const response = await handleRegister({ name, email, password });
 
@@ -74,7 +91,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     setUser(response.data.user);
-    localStorage.setItem("token", response.data.token);
+    dispatch(setAuthData({ token: response.data.token }));
 
     router.push("/dashboard");
   };
@@ -97,9 +114,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     setUser(response.data.user);
-    localStorage.setItem("token", response.data.token);
+    dispatch(setAuthData({ token: response.data.token }));
 
     router.push("/dashboard");
+  };
+
+  const googleAuthLoginHandler = async (
+    tokenResponse: Omit<CodeResponse, "error">,
+  ) => {
+    try {
+      // Send the authorization code to your backend
+      const response = await handleAuthGoogle(tokenResponse.code);
+
+      if (response.error) {
+        console.error(response.error);
+
+        if (
+          "data" in response.error &&
+          typeof response.error.data === "string"
+        ) {
+          toast.error(response.error.data);
+        } else {
+          toast.error("Please try again");
+        }
+
+        return;
+      }
+
+      toast.success(response.data.message);
+      dispatch(setAuthData({ token: response.data.token }));
+      setUser(response.data.user);
+
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Google sign-in failed:", error);
+    }
   };
 
   const logout = () => {
@@ -112,6 +161,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser,
     signUp,
     signIn,
+    googleAuthLoginHandler,
     logout,
   };
 

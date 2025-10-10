@@ -8,10 +8,21 @@ import {
 } from "@/services/subsciption";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { useSelector } from "react-redux";
+import { RootState } from "@/services/store";
 
 export default function Dashboard() {
-  const { data, isLoading } = useGetSubsQuery();
-  const { data: statsData, isLoading: statsIsLoading } = useGetSubStatsQuery();
+  const { token } = useSelector((state: RootState) => state.auth);
+
+  const { data, isLoading } = useGetSubsQuery(undefined, {
+    skip: !token,
+  });
+  const { data: statsData, isLoading: statsIsLoading } = useGetSubStatsQuery(
+    undefined,
+    {
+      skip: !token,
+    },
+  );
 
   const [handleDelete] = useDeleteSubMutation();
 
@@ -42,7 +53,7 @@ export default function Dashboard() {
         loading: "Loading...",
         success: <b>Success</b>,
         error: (err) => <b>{err.message}</b>,
-      }
+      },
     );
   };
 

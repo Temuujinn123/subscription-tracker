@@ -1,8 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { useAuthGoogleMutation } from "@/services/user";
 import { useGoogleLogin } from "@react-oauth/google";
-import { useRouter } from "next/router";
-import toast from "react-hot-toast";
 
 interface GoogleSignInProps {
   buttonText?: string;
@@ -11,40 +8,10 @@ interface GoogleSignInProps {
 const GoogleSignIn = ({
   buttonText = "Sign in with Google",
 }: GoogleSignInProps) => {
-  const [handleAuthGoogle] = useAuthGoogleMutation();
-  const { setUser } = useAuth();
-  const router = useRouter();
+  const { googleAuthLoginHandler } = useAuth();
 
   const login = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        // Send the authorization code to your backend
-        const response = await handleAuthGoogle(tokenResponse.code);
-
-        if (response.error) {
-          console.error(response.error);
-
-          if (
-            "data" in response.error &&
-            typeof response.error.data === "string"
-          ) {
-            toast.error(response.error.data);
-          } else {
-            toast.error("Please try again");
-          }
-
-          return;
-        }
-
-        toast.success(response.data.message);
-        localStorage.setItem("token", response.data.token);
-        setUser(response.data.user);
-
-        router.push("/dashboard");
-      } catch (error) {
-        console.error("Google sign-in failed:", error);
-      }
-    },
+    onSuccess: googleAuthLoginHandler,
     flow: "auth-code",
   });
 
