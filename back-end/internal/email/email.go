@@ -3,6 +3,7 @@ package email
 import (
 	"fmt"
 	"log"
+
 	"subscription-tracker/internal/models"
 
 	"gopkg.in/gomail.v2"
