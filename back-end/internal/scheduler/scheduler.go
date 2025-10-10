@@ -3,6 +3,7 @@ package scheduler
 import (
 	"log"
 	"os"
+
 	"subscription-tracker/internal/database"
 	"subscription-tracker/internal/email"
 
@@ -13,7 +14,7 @@ func InitScheduler(db *database.DB) {
 	c := cron.New()
 
 	// Check for upcoming subscriptions every day at 12 AM
-	c.AddFunc("45 03 * * *", func() {
+	c.AddFunc("31 16 * * *", func() {
 		log.Println("Checking for upcoming subscriptions...")
 		checkUpcomingSubscriptions(db)
 	})
@@ -32,7 +33,7 @@ func checkUpcomingSubscriptions(db *database.DB) {
 	// Initialize email service
 	emailConfig := email.EmailConfig{
 		SMTPHost:     "smtp.gmail.com",
-		SMTPPort:     587,
+		SMTPPort:     465,
 		SMTPUser:     os.Getenv("SMTP_USER"),
 		SMTPPassword: os.Getenv("SMTP_PASSWORD"),
 		FromEmail:    os.Getenv("SMTP_FROM"),
