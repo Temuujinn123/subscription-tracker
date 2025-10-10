@@ -24,6 +24,11 @@ type AuthResponse struct {
 	User    User   `json:"user"`
 }
 
+type AccessTokenResponse struct {
+	Message string `json:"message"`
+	Token   string `json:"token"`
+}
+
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`

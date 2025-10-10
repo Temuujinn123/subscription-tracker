@@ -28,8 +28,26 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
+func GenerateRefreshJWT(user models.User) (string, error) {
+	expirationTime := time.Now().Add(24 * time.Hour * 90) // 90 days
+
+	claims := &Claims{
+		UserID: user.ID,
+		Email:  user.Email,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+			Issuer:    "subscription-tracker",
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(jwtSecret)
+}
+
 func GenerateJWT(user models.User) (string, error) {
-	expirationTime := time.Now().Add(24 * time.Hour * 7) // Token expires in 24 hours
+	expirationTime := time.Now().Add(5 * time.Minute) // Token expires in 5 minutes
 
 	claims := &Claims{
 		UserID: user.ID,
@@ -53,7 +71,6 @@ func ValidateJWT(tokenString string) (*Claims, error) {
 		}
 		return jwtSecret, nil
 	})
-
 	if err != nil {
 		return nil, err
 	}

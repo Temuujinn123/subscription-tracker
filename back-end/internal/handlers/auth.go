@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"os"
 	"subscription-tracker/internal/models"
 	"subscription-tracker/internal/utils"
+	"time"
 
 	"golang.org/x/oauth2"
 )
@@ -53,6 +55,22 @@ func Register(db models.Database) http.HandlerFunc {
 			return
 		}
 
+		refreshToken, err := utils.GenerateRefreshJWT(*createdUser)
+		if err != nil {
+			http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+			return
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     "refreshToken",
+			Value:    refreshToken,
+			Path:     "/",
+			Expires:  time.Now().Add(24 * time.Hour),
+			HttpOnly: true,
+			Secure:   os.Getenv("ENV") == "production",
+			SameSite: http.SameSiteLaxMode,
+		})
+
 		response := models.AuthResponse{
 			Message: "User registered successfully",
 			Token:   token,
@@ -92,6 +110,22 @@ func Login(db models.Database) http.HandlerFunc {
 			http.Error(w, "Failed to generate token", http.StatusInternalServerError)
 			return
 		}
+
+		refreshToken, err := utils.GenerateRefreshJWT(*user)
+		if err != nil {
+			http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+			return
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     "refreshToken",
+			Value:    refreshToken,
+			Path:     "/",
+			Expires:  time.Now().Add(24 * time.Hour),
+			HttpOnly: true,
+			Secure:   os.Getenv("ENV") == "production",
+			SameSite: http.SameSiteLaxMode,
+		})
 
 		response := models.AuthResponse{
 			Message: "Login Successful",
@@ -152,7 +186,6 @@ func AuthGoogle(db models.Database, googleOauthConfig *oauth2.Config) http.Handl
 			newUser.ThirdParty = "google"
 
 			createdUser, err := db.CreateUser(newUser)
-
 			if err != nil {
 				http.Error(w, "Failed to create user", http.StatusInternalServerError)
 				return
@@ -174,6 +207,23 @@ func AuthGoogle(db models.Database, googleOauthConfig *oauth2.Config) http.Handl
 			return
 		}
 
+		// Generate token
+		refreshToken, err := utils.GenerateRefreshJWT(*user)
+		if err != nil {
+			http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+			return
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     "refreshToken",
+			Value:    refreshToken,
+			Path:     "/",
+			Expires:  time.Now().Add(24 * time.Hour),
+			HttpOnly: true,
+			Secure:   os.Getenv("ENV") == "production",
+			SameSite: http.SameSiteLaxMode,
+		})
+
 		response := models.AuthResponse{
 			Message: "Login Successful",
 			Token:   token,
@@ -191,5 +241,56 @@ func GetUserDetail(db models.Database) http.HandlerFunc {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(user)
+	}
+}
+
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refreshToken",
+		Value:    "",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode("Logout successfull")
+}
+
+func GenerateAccessToken(db models.Database) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("refreshToken")
+		if err != nil {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		claims, err := utils.ValidateJWT(cookie.Value)
+		if err != nil {
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		user, err := db.GetUserByID(claims.UserID)
+		if err != nil {
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			return
+		}
+
+		token, err := utils.GenerateJWT(*user)
+		if err != nil {
+			http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+			return
+		}
+
+		response := models.AccessTokenResponse{
+			Message: "Login Successful",
+			Token:   token,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
 	}
 }
