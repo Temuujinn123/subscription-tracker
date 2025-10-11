@@ -224,7 +224,7 @@ func setHTTPCookie(w http.ResponseWriter, refreshToken string) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refreshToken",
 		Value:    refreshToken,
-		Path:     "/api/v1/refresh",
+		Path:     "/",
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
 		Secure:   false,
