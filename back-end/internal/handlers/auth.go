@@ -226,7 +226,7 @@ func setHTTPCookie(w http.ResponseWriter, refreshToken string) {
 		Value:    refreshToken,
 		Path:     "/",
 		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: true,
+		HttpOnly: false,
 		Secure:   false,
 		// Secure:   os.Getenv("ENV") == "production",
 		// SameSite: http.SameSiteLaxMode,
@@ -237,7 +237,7 @@ func setHTTPCookie(w http.ResponseWriter, refreshToken string) {
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refreshToken",
-		Value:    "",
+		Value:    "/",
 		Path:     "/api/v1/refresh",
 		Expires:  time.Unix(0, 0),
 		HttpOnly: true,
