@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"os"
 	"time"
 
 	"subscription-tracker/internal/models"
@@ -227,8 +226,9 @@ func setHTTPCookie(w http.ResponseWriter, refreshToken string) {
 		Value:    refreshToken,
 		Path:     "/api/v1/refresh",
 		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: false,
-		Secure:   os.Getenv("ENV") == "production",
+		HttpOnly: true,
+		Secure:   false,
+		// Secure:   os.Getenv("ENV") == "production",
 		// SameSite: http.SameSiteLaxMode,
 		SameSite: http.SameSiteNoneMode,
 	})
