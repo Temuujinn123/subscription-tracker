@@ -9,6 +9,7 @@ export const subscriptionApi = createApi({
     getSubs: build.query<Subscription[], void>({
       query: () => ({
         url: "subscriptions",
+        credentials: "include",
       }),
       providesTags: ["sub"],
     }),
