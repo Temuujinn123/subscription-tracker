@@ -17,7 +17,6 @@ export const userApi = createApi({
           email,
           password,
         },
-        credentials: "include",
       }),
     }),
     login: build.mutation<AuthResult, { email: string; password: string }>({
@@ -28,7 +27,6 @@ export const userApi = createApi({
           email,
           password,
         },
-        credentials: "include",
       }),
     }),
     authGoogle: build.mutation<AuthResult, string>({
@@ -38,7 +36,6 @@ export const userApi = createApi({
         body: {
           code,
         },
-        credentials: "include",
       }),
     }),
     getUserDetail: build.query<User, void>({

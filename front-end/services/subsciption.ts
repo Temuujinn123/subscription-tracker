@@ -9,14 +9,12 @@ export const subscriptionApi = createApi({
     getSubs: build.query<Subscription[], void>({
       query: () => ({
         url: "subscriptions",
-        credentials: "include",
       }),
       providesTags: ["sub"],
     }),
     getSubDetail: build.query<Subscription, number>({
       query: (id) => ({
         url: `subscriptions/${id}`,
-        credentials: "include",
       }),
       providesTags: ["sub"],
     }),
@@ -25,7 +23,6 @@ export const subscriptionApi = createApi({
         url: "subscriptions",
         method: "POST",
         body: requestSub,
-        credentials: "include",
       }),
       invalidatesTags: ["sub"],
     }),
@@ -34,7 +31,6 @@ export const subscriptionApi = createApi({
         url: `subscriptions/${requestSub.id}`,
         method: "PUT",
         body: requestSub.body,
-        credentials: "include",
       }),
       invalidatesTags: ["sub"],
     }),
@@ -42,14 +38,12 @@ export const subscriptionApi = createApi({
       query: (id) => ({
         url: `subscriptions/${id}`,
         method: "DELETE",
-        credentials: "include",
       }),
       invalidatesTags: ["sub"],
     }),
     getSubStats: build.query<SubStats, void>({
       query: () => ({
         url: "subscriptions/stats",
-        credentials: "include",
       }),
       providesTags: ["sub"],
     }),
