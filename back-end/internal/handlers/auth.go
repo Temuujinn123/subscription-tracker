@@ -62,15 +62,7 @@ func Register(db models.Database) http.HandlerFunc {
 			return
 		}
 
-		http.SetCookie(w, &http.Cookie{
-			Name:     "refreshToken",
-			Value:    refreshToken,
-			Path:     "/",
-			Expires:  time.Now().Add(24 * time.Hour),
-			HttpOnly: true,
-			Secure:   os.Getenv("ENV") == "production",
-			SameSite: http.SameSiteLaxMode,
-		})
+		setHTTPCookie(w, refreshToken)
 
 		response := models.AuthResponse{
 			Message: "User registered successfully",
@@ -118,15 +110,7 @@ func Login(db models.Database) http.HandlerFunc {
 			return
 		}
 
-		http.SetCookie(w, &http.Cookie{
-			Name:     "refreshToken",
-			Value:    refreshToken,
-			Path:     "/",
-			Expires:  time.Now().Add(24 * time.Hour),
-			HttpOnly: true,
-			Secure:   os.Getenv("ENV") == "production",
-			SameSite: http.SameSiteLaxMode,
-		})
+		setHTTPCookie(w, refreshToken)
 
 		response := models.AuthResponse{
 			Message: "Login Successful",
@@ -215,15 +199,7 @@ func AuthGoogle(db models.Database, googleOauthConfig *oauth2.Config) http.Handl
 			return
 		}
 
-		http.SetCookie(w, &http.Cookie{
-			Name:     "refreshToken",
-			Value:    refreshToken,
-			Path:     "/",
-			Expires:  time.Now().Add(24 * time.Hour),
-			HttpOnly: true,
-			Secure:   os.Getenv("ENV") == "production",
-			SameSite: http.SameSiteLaxMode,
-		})
+		setHTTPCookie(w, refreshToken)
 
 		response := models.AuthResponse{
 			Message: "Login Successful",
@@ -245,11 +221,25 @@ func GetUserDetail(db models.Database) http.HandlerFunc {
 	}
 }
 
+func setHTTPCookie(w http.ResponseWriter, refreshToken string) {
+	println(refreshToken)
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refreshToken",
+		Value:    refreshToken,
+		Path:     "/api/v1/refresh",
+		Expires:  time.Now().Add(24 * time.Hour),
+		HttpOnly: true,
+		Secure:   os.Getenv("ENV") == "production",
+		SameSite: http.SameSiteLaxMode,
+	})
+}
+
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refreshToken",
 		Value:    "",
-		Path:     "/",
+		Path:     "/api/v1/refresh",
 		Expires:  time.Unix(0, 0),
 		HttpOnly: true,
 		Secure:   true,
