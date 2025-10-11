@@ -41,6 +41,7 @@ export const userApi = createApi({
     getUserDetail: build.query<User, void>({
       query: () => ({
         url: "detail",
+        credentials: "include",
       }),
     }),
     getAccessToken: build.query<RefreshResult, void>({
