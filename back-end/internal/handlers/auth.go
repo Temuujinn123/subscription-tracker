@@ -222,8 +222,6 @@ func GetUserDetail(db models.Database) http.HandlerFunc {
 }
 
 func setHTTPCookie(w http.ResponseWriter, refreshToken string) {
-	println(refreshToken)
-
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refreshToken",
 		Value:    refreshToken,
@@ -231,7 +229,8 @@ func setHTTPCookie(w http.ResponseWriter, refreshToken string) {
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
 		Secure:   os.Getenv("ENV") == "production",
-		SameSite: http.SameSiteLaxMode,
+		// SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 	})
 }
 
