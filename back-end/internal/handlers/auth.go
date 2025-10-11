@@ -227,7 +227,7 @@ func setHTTPCookie(w http.ResponseWriter, refreshToken string) {
 		Value:    refreshToken,
 		Path:     "/api/v1/refresh",
 		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: true,
+		HttpOnly: false,
 		Secure:   os.Getenv("ENV") == "production",
 		// SameSite: http.SameSiteLaxMode,
 		SameSite: http.SameSiteNoneMode,
