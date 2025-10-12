@@ -228,7 +228,7 @@ func setHTTPCookie(w http.ResponseWriter, refreshToken string) {
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
 		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 		Domain:   "subscription-tracker-gamma.vercel.app",
 	}
 
@@ -243,7 +243,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		Expires:  time.Unix(0, 0),
 		HttpOnly: true,
 		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 		Domain:   "subscription-tracker-gamma.vercel.app",
 	})
 
