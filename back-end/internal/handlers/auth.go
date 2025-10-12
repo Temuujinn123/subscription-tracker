@@ -233,20 +233,6 @@ func setHTTPCookie(w http.ResponseWriter, refreshToken string) {
 
 	http.SetCookie(w, &cookie)
 	fmt.Fprint(w, "Refresh token set!")
-
-	return
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "refreshToken",
-		Value:    refreshToken,
-		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: false,
-		Secure:   false,
-		// Secure:   os.Getenv("ENV") == "production",
-		// SameSite: http.SameSiteLaxMode,
-		SameSite: http.SameSiteNoneMode,
-	})
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
