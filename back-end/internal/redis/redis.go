@@ -82,12 +82,13 @@ func (r *RedisClient) Close() error {
 }
 
 // Cache key generators
-func (r *RedisClient) GetSubscriptionsCacheKey() string {
-	return getEnv("CACHE_KEY_SUBSCRIPTIONS", "subscriptions:all")
-}
-
 func (r *RedisClient) GetUserSubscriptionsCacheKey(userID int) string {
 	keyPattern := getEnv("CACHE_KEY_USER_SUBSCRIPTIONS", "subscriptions:user:%d")
+	return fmt.Sprintf(keyPattern, userID)
+}
+
+func (r *RedisClient) GetUserStatsCacheKey(userID int) string {
+	keyPattern := getEnv("CACHE_KEY_USER_STATS", "stats:user:%d")
 	return fmt.Sprintf(keyPattern, userID)
 }
 

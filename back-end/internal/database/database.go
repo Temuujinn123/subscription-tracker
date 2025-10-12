@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+
 	"subscription-tracker/internal/cache"
 	"subscription-tracker/internal/models"
 
@@ -90,7 +91,7 @@ func (db *DB) Close() error {
 	return db.DB.Close()
 }
 
-func (db *DB) GetUserSubscriptions(userId int) ([]models.Subscription, error) {
+func (db *DB) GetUserSubscriptions(userID int) ([]models.Subscription, error) {
 	query := `
 			SELECT 
 				s.id, 
@@ -109,7 +110,7 @@ func (db *DB) GetUserSubscriptions(userId int) ([]models.Subscription, error) {
 			WHERE s.user_id = $1
 			`
 
-	rows, err := db.Query(query, userId)
+	rows, err := db.Query(query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +180,7 @@ func (db *DB) GetSubscriptionByID(id int) (*models.Subscription, error) {
 	return &sub, nil
 }
 
-func (db *DB) CreateSubscription(req models.CreateSubscriptionRequest, userId int) (*models.Subscription, error) {
+func (db *DB) CreateSubscription(req models.CreateSubscriptionRequest, userID int) (*models.Subscription, error) {
 	query := `INSERT INTO subscriptions (name, category, price, billing_cycle, next_billing_date, user_id)
 	          VALUES ($1, $2, $3, $4, $5, $6) 
 	          RETURNING id, name, category, price, billing_cycle, next_billing_date, is_active, created_at, updated_at`
@@ -192,7 +193,7 @@ func (db *DB) CreateSubscription(req models.CreateSubscriptionRequest, userId in
 		req.Price,
 		req.BillingCycle,
 		req.NextBillingDate,
-		userId,
+		userID,
 	).Scan(
 		&sub.ID,
 		&sub.Name,
@@ -210,7 +211,7 @@ func (db *DB) CreateSubscription(req models.CreateSubscriptionRequest, userId in
 
 	// Invalidate cache after creation
 	if db.cacheService != nil {
-		db.cacheService.InvalidateSubscriptionsCache()
+		db.cacheService.InvalidateUserSubscriptionsAndStatsCache(userID)
 	}
 
 	return &sub, nil
@@ -226,7 +227,7 @@ func (db *DB) UpdateSubscription(id int, req models.CreateSubscriptionRequest) (
 				next_billing_date = $5, 
 				updated_at = CURRENT_TIMESTAMP 
 	          WHERE id = $6 
-			  RETURNING id, name, category, price, billing_cycle, next_billing_date, is_active, created_at, updated_at`
+			  RETURNING id, name, category, price, billing_cycle, next_billing_date, is_active, user_id, created_at, updated_at`
 
 	var sub models.Subscription
 	err := db.QueryRow(query, req.Name, req.Category, req.Price, req.BillingCycle, req.NextBillingDate, id).
@@ -238,6 +239,7 @@ func (db *DB) UpdateSubscription(id int, req models.CreateSubscriptionRequest) (
 			&sub.BillingCycle,
 			&sub.NextBillingDate,
 			&sub.IsActive,
+			&sub.UserID,
 			&sub.CreatedAt,
 			&sub.UpdatedAt,
 		)
@@ -247,19 +249,19 @@ func (db *DB) UpdateSubscription(id int, req models.CreateSubscriptionRequest) (
 
 	// Invalidate cache after update
 	if db.cacheService != nil {
-		db.cacheService.InvalidateSubscriptionsCache()
+		db.cacheService.InvalidateUserSubscriptionsAndStatsCache(sub.UserID)
 	}
 
 	return &sub, nil
 }
 
-func (db *DB) DeleteSubscription(id int) error {
+func (db *DB) DeleteSubscription(id int, userID int) error {
 	query := `DELETE FROM subscriptions WHERE id = $1`
 	_, err := db.Exec(query, id)
 
 	// Invalidate cache after delete
 	if db.cacheService != nil {
-		db.cacheService.InvalidateSubscriptionsCache()
+		db.cacheService.InvalidateUserSubscriptionsAndStatsCache(userID)
 	}
 
 	return err
@@ -316,21 +318,21 @@ func (db *DB) GetUpcomingSubscriptions() ([]models.Subscription, error) {
 }
 
 // Statistic methods
-func (db *DB) GetUserSubscriptionsStats(userId int) (*models.SubscriptionStats, error) {
+func (db *DB) GetUserSubscriptionsStats(userID int) (*models.SubscriptionStats, error) {
 	query := `
 		SELECT 
-			(
+			COALESCE((
 				SELECT SUM(s.price) from subscriptions s WHERE s.user_id = $1 and s.is_active = 'true' 
-			) as total_monthly,
-			(
+			), 0) as total_monthly,
+			COALESCE((
 				SELECT COUNT(s.*) from subscriptions s WHERE s.user_id = $1 and s.is_active = 'true'
-			) as active_count,
-			(
+			), 0) as active_count,
+			COALESCE((
 				SELECT s.price from subscriptions s WHERE s.user_id = $1 and s.is_active = 'true' ORDER BY s.next_billing_date LIMIT 1
-			) as next_payment
+			), 0) as next_payment
 	`
 
-	row := db.QueryRow(query, userId)
+	row := db.QueryRow(query, userID)
 	var stats models.SubscriptionStats
 	err := row.Scan(
 		&stats.TotalMonthly,

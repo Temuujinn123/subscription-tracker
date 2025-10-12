@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+
 	"subscription-tracker/internal/cache"
 	"subscription-tracker/internal/models"
 
@@ -35,7 +36,7 @@ func GetSubscriptions(db models.Database, cacheService *cache.CacheService) http
 		// Cache the result for future requests
 		if cacheService != nil {
 			go func() {
-				err := cacheService.CacheAllSubscriptions(subscriptions)
+				err := cacheService.CacheUserSubscriptions(user.ID, subscriptions)
 				if err != nil {
 					log.Printf("Failed to cache subscriptions: %v", err)
 				}
@@ -47,7 +48,7 @@ func GetSubscriptions(db models.Database, cacheService *cache.CacheService) http
 	}
 }
 
-func CreateSubscription(db models.Database) http.HandlerFunc {
+func CreateSubscription(db models.Database, cacheService *cache.CacheService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req models.CreateSubscriptionRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -57,15 +58,13 @@ func CreateSubscription(db models.Database) http.HandlerFunc {
 
 		user := r.Context().Value("user").(*models.User)
 
-		// req.NextBillingDate = req.NextBillingDate[0 : len(req.NextBillingDate)-2]
-
-		println(req.NextBillingDate)
-
 		subscription, err := db.CreateSubscription(req, user.ID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		//		cacheService.InvalidateUserSubscriptionsAndStatsCache(user.ID)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusCreated)
@@ -93,7 +92,7 @@ func GetSubscription(db models.Database) http.HandlerFunc {
 	}
 }
 
-func UpdateSubscription(db models.Database) http.HandlerFunc {
+func UpdateSubscription(db models.Database, cacheService *cache.CacheService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
 		id, err := strconv.Atoi(vars["id"])
@@ -108,21 +107,23 @@ func UpdateSubscription(db models.Database) http.HandlerFunc {
 			return
 		}
 
-		println(req.NextBillingDate)
-
 		subscription, err := db.UpdateSubscription(id, req)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		//		cacheService.InvalidateUserSubscriptionsAndStatsCache(id)
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(subscription)
 	}
 }
 
-func DeleteSubscription(db models.Database) http.HandlerFunc {
+func DeleteSubscription(db models.Database, cacheService *cache.CacheService) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		user := r.Context().Value("user").(*models.User)
+
 		vars := mux.Vars(r)
 		id, err := strconv.Atoi(vars["id"])
 		if err != nil {
@@ -130,11 +131,13 @@ func DeleteSubscription(db models.Database) http.HandlerFunc {
 			return
 		}
 
-		err = db.DeleteSubscription(id)
+		err = db.DeleteSubscription(id, user.ID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		//		cacheService.InvalidateUserSubscriptionsAndStatsCache(id)
 
 		w.WriteHeader(http.StatusNoContent)
 	}

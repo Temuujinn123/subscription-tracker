@@ -3,9 +3,10 @@ package worker
 import (
 	"context"
 	"log"
+	"time"
+
 	"subscription-tracker/internal/cache"
 	"subscription-tracker/internal/models"
-	"time"
 )
 
 type CacheWorker struct {
@@ -127,15 +128,6 @@ func (w *CacheWorker) checkForDatabaseChanges(since time.Time) {
 }
 
 // Manual cache invalidation methods
-func (w *CacheWorker) InvalidateSubscriptionsCache() {
-	err := w.cacheService.InvalidateSubscriptionsCache()
-	if err != nil {
-		log.Printf("Failed to invalidate subscriptions cache: %v", err)
-	} else {
-		log.Println("Subscriptions cache invalidated")
-	}
-}
-
 func (w *CacheWorker) InvalidateUserSubscriptionsCache(userID int) {
 	err := w.cacheService.InvalidateUserSubscriptionsCache(userID)
 	if err != nil {

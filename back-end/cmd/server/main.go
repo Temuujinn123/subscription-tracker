@@ -91,19 +91,20 @@ func main() {
 	authRouter.HandleFunc(basePath+"/subscriptions/stats", handlers.GetUserSubscriptionsStats(db)).Methods("GET")
 	authRouter.HandleFunc(basePath+"/detail", handlers.GetUserDetail(db)).Methods("GET")
 	authRouter.HandleFunc(basePath+"/subscriptions", handlers.GetSubscriptions(db, cacheService)).Methods("GET")
-	authRouter.HandleFunc(basePath+"/subscriptions", handlers.CreateSubscription(db)).Methods("POST")
+	authRouter.HandleFunc(basePath+"/subscriptions", handlers.CreateSubscription(db, cacheService)).Methods("POST")
 	authRouter.HandleFunc(basePath+"/subscriptions/{id}", handlers.GetSubscription(db)).Methods("GET")
-	authRouter.HandleFunc(basePath+"/subscriptions/{id}", handlers.UpdateSubscription(db)).Methods("PUT")
-	authRouter.HandleFunc(basePath+"/subscriptions/{id}", handlers.DeleteSubscription(db)).Methods("DELETE")
+	authRouter.HandleFunc(basePath+"/subscriptions/{id}", handlers.UpdateSubscription(db, cacheService)).Methods("PUT")
+	authRouter.HandleFunc(basePath+"/subscriptions/{id}", handlers.DeleteSubscription(db, cacheService)).Methods("DELETE")
 
 	// Cache management endpoints (for debugging)
 	if cacheService != nil {
 		router.HandleFunc("/cache/clear", func(w http.ResponseWriter, r *http.Request) {
-			err := cacheService.InvalidateSubscriptionsCache()
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
+			cacheService.InvalidateUserSubscriptionsAndStatsCache(25)
+			//	err := cacheService.InvalidateSubscriptionsCache()
+			//	if err != nil {
+			//		http.Error(w, err.Error(), http.StatusInternalServerError)
+			//		return
+			//	}
 			w.Write([]byte("Cache cleared successfully"))
 		}).Methods("POST")
 	}

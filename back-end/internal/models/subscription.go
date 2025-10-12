@@ -13,6 +13,7 @@ type Subscription struct {
 	Email           string    `json:"email"`
 	Category        string    `json:"category"`
 	IsActive        bool      `json:"isActive"`
+	UserID          int       `json:"user_id"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
 }
