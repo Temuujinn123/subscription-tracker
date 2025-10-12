@@ -225,8 +225,8 @@ func setHTTPCookie(w http.ResponseWriter, refreshToken string) {
 		Name:     "refreshToken",
 		Value:    refreshToken,
 		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: false,
-		Secure:   false,
+		HttpOnly: true,
+		Secure:   true,
 		SameSite: http.SameSiteNoneMode,
 	}
 
