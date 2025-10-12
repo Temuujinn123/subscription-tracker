@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -221,6 +222,20 @@ func GetUserDetail(db models.Database) http.HandlerFunc {
 }
 
 func setHTTPCookie(w http.ResponseWriter, refreshToken string) {
+	cookie := http.Cookie{
+		Name:     "refreshToken",
+		Value:    refreshToken,
+		Expires:  time.Now().Add(24 * time.Hour),
+		HttpOnly: false,
+		Secure:   false,
+		SameSite: http.SameSiteNoneMode,
+	}
+
+	http.SetCookie(w, &cookie)
+	fmt.Fprint(w, "Refresh token set!")
+
+	return
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refreshToken",
 		Value:    refreshToken,
@@ -240,9 +255,9 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		Value:    "/",
 		Path:     "/api/v1/refresh",
 		Expires:  time.Unix(0, 0),
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
+		HttpOnly: false,
+		Secure:   false,
+		SameSite: http.SameSiteNoneMode,
 	})
 
 	w.Header().Set("Content-Type", "application/json")
