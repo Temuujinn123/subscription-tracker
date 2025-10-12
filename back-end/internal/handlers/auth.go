@@ -224,10 +224,12 @@ func setHTTPCookie(w http.ResponseWriter, refreshToken string) {
 	cookie := http.Cookie{
 		Name:     "refreshToken",
 		Value:    refreshToken,
+		Path:     "/api/v1/refresh",
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
 		Secure:   true,
 		SameSite: http.SameSiteNoneMode,
+		Domain:   "subscription-tracker-gamma.vercel.app",
 	}
 
 	http.SetCookie(w, &cookie)
@@ -236,12 +238,13 @@ func setHTTPCookie(w http.ResponseWriter, refreshToken string) {
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refreshToken",
-		Value:    "/",
+		Value:    "",
 		Path:     "/api/v1/refresh",
 		Expires:  time.Unix(0, 0),
-		HttpOnly: false,
-		Secure:   false,
+		HttpOnly: true,
+		Secure:   true,
 		SameSite: http.SameSiteNoneMode,
+		Domain:   "subscription-tracker-gamma.vercel.app",
 	})
 
 	w.Header().Set("Content-Type", "application/json")
