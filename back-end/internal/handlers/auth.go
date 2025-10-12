@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -232,7 +231,6 @@ func setHTTPCookie(w http.ResponseWriter, refreshToken string) {
 	}
 
 	http.SetCookie(w, &cookie)
-	fmt.Fprint(w, "Refresh token set!")
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
