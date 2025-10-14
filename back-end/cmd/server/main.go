@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"runtime"
 	"time"
 
 	"subscription-tracker/internal/cache"
@@ -112,6 +113,23 @@ func main() {
 		}).Methods("POST")
 	}
 
+	router.HandleFunc("/network", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("System Network Configuration Check")
+		fmt.Println("=================================")
+
+		// Check operating system
+		fmt.Printf("OS: %s\n", runtime.GOOS)
+
+		// Check local network interface
+		checkLocalNetwork()
+
+		// Check if it's a DNS vs IP issue
+		testDNSvsIP()
+
+		// Check outbound port restrictions
+		testCommonPorts()
+	})
+
 	router.HandleFunc("/mail", func(w http.ResponseWriter, r *http.Request) {
 		//		scheduler.CheckUpcomingSubscriptions(db)
 		host := "smtp.gmail.com"
@@ -132,7 +150,7 @@ func main() {
 
 	// Configure CORS
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000", "https://subscription-tracker-6l63s08l4-temuujinn123s-projects.vercel.app", "https://subscription-tracker-gamma.vercel.app"},
+		AllowedOrigins:   []string{"http://localhost:3000", "https://subscription-tracker-gamma.vercel.app"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization", "X-Requested-With"},
 		AllowCredentials: true,
@@ -194,5 +212,75 @@ func testSMTPPort(host, port string) {
 	n, err := conn.Read(buffer)
 	if err == nil {
 		fmt.Printf("  SMTP banner: %s", string(buffer[:n]))
+	}
+}
+
+func checkLocalNetwork() {
+	fmt.Println("\n1. Local Network Interface:")
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		fmt.Printf("  Error getting interfaces: %v\n", err)
+		return
+	}
+
+	for _, iface := range interfaces {
+		addrs, _ := iface.Addrs()
+		if len(addrs) > 0 && iface.Flags&net.FlagUp != 0 {
+			fmt.Printf("  Interface: %s\n", iface.Name)
+			for _, addr := range addrs {
+				fmt.Printf("    - %s\n", addr)
+			}
+		}
+	}
+}
+
+func testDNSvsIP() {
+	fmt.Println("\n2. DNS Resolution vs Direct IP:")
+
+	// Test via hostname
+	hostnameTest := func(host, port string) {
+		addr := net.JoinHostPort(host, port)
+		conn, err := net.DialTimeout("tcp", addr, 5*time.Second)
+		if err != nil {
+			fmt.Printf("  %s: ✗ %v\n", host, err)
+		} else {
+			conn.Close()
+			fmt.Printf("  %s: ✓ Connected\n", host)
+		}
+	}
+
+	hostnameTest("smtp.gmail.com", "587")
+	hostnameTest("64.233.180.109", "587") // Direct IP
+	hostnameTest("142.250.74.109", "587") // Alternative IP
+}
+
+func testCommonPorts() {
+	fmt.Println("\n3. Common Outbound Port Test:")
+
+	ports := []struct {
+		port string
+		desc string
+	}{
+		{"80", "HTTP"},
+		{"443", "HTTPS"},
+		{"53", "DNS"},
+		{"22", "SSH"},
+		{"993", "IMAPS"},
+		{"995", "POP3S"},
+	}
+
+	for _, p := range ports {
+		testPort("google.com", p.port, p.desc)
+	}
+}
+
+func testPort(host, port, desc string) {
+	addr := net.JoinHostPort(host, port)
+	conn, err := net.DialTimeout("tcp", addr, 5*time.Second)
+	if err != nil {
+		fmt.Printf("  %s (%s): ✗ %v\n", port, desc, err)
+	} else {
+		conn.Close()
+		fmt.Printf("  %s (%s): ✓ Connected\n", port, desc)
 	}
 }
