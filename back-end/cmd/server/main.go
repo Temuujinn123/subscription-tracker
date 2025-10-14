@@ -131,13 +131,7 @@ func main() {
 	})
 
 	router.HandleFunc("/mail", func(w http.ResponseWriter, r *http.Request) {
-		//		scheduler.CheckUpcomingSubscriptions(db)
-		host := "smtp.gmail.com"
-		ports := []string{"465", "587", "25"}
-
-		for _, port := range ports {
-			testSMTPPort(host, port)
-		}
+		scheduler.CheckUpcomingSubscriptions(db)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	}).Methods("GET")
