@@ -1,7 +1,10 @@
 package main
 
 import (
+	"crypto/tls"
+	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -110,7 +113,13 @@ func main() {
 	}
 
 	router.HandleFunc("/mail", func(w http.ResponseWriter, r *http.Request) {
-		scheduler.CheckUpcomingSubscriptions(db)
+		//		scheduler.CheckUpcomingSubscriptions(db)
+		host := "smtp.gmail.com"
+		ports := []string{"465", "587", "25"}
+
+		for _, port := range ports {
+			testSMTPPort(host, port)
+		}
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	}).Methods("GET")
@@ -144,4 +153,46 @@ func main() {
 
 	log.Println("Server starting on :8080")
 	log.Fatal(server.ListenAndServe())
+}
+
+func testSMTPPort(host, port string) {
+	address := net.JoinHostPort(host, port)
+
+	fmt.Printf("\nTesting %s...\n", address)
+
+	// Basic TCP connection test
+	conn, err := net.DialTimeout("tcp", address, 10*time.Second)
+	if err != nil {
+		fmt.Printf("  TCP connection failed: %v\n", err)
+		return
+	}
+	defer conn.Close()
+
+	fmt.Printf("  TCP connection successful\n")
+
+	// For SSL ports, try TLS handshake
+	if port == "465" {
+		tlsConn := tls.Client(conn, &tls.Config{
+			ServerName:         host,
+			InsecureSkipVerify: false,
+		})
+
+		err = tlsConn.Handshake()
+		if err != nil {
+			fmt.Printf("  TLS handshake failed: %v\n", err)
+			return
+		}
+		defer tlsConn.Close()
+
+		fmt.Printf("  TLS handshake successful\n")
+		fmt.Printf("  Connection encrypted with: %s\n", tlsConn.ConnectionState().CipherSuite)
+	}
+
+	// Try to read SMTP banner
+	conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+	buffer := make([]byte, 1024)
+	n, err := conn.Read(buffer)
+	if err == nil {
+		fmt.Printf("  SMTP banner: %s", string(buffer[:n]))
+	}
 }
