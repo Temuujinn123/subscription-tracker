@@ -109,6 +109,12 @@ func main() {
 		}).Methods("POST")
 	}
 
+	router.HandleFunc("/mail", func(w http.ResponseWriter, r *http.Request) {
+		scheduler.CheckUpcomingSubscriptions(db)
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	}).Methods("GET")
+
 	// Health check
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)

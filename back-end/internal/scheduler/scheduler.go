@@ -17,14 +17,14 @@ func InitScheduler(db *database.DB) {
 	// Check for upcoming subscriptions every day at 12 AM
 	c.AddFunc("30 00 * * *", func() {
 		log.Println("Checking for upcoming subscriptions...")
-		checkUpcomingSubscriptions(db)
+		CheckUpcomingSubscriptions(db)
 	})
 
 	c.Start()
 	log.Println("Scheduler started")
 }
 
-func checkUpcomingSubscriptions(db *database.DB) {
+func CheckUpcomingSubscriptions(db *database.DB) {
 	subscriptions, err := db.GetUpcomingSubscriptions()
 	if err != nil {
 		log.Printf("Error fetching upcoming subscriptions: %v", err)
