@@ -20,6 +20,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"github.com/resend/resend-go/v2"
 	"github.com/rs/cors"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -131,7 +132,27 @@ func main() {
 	})
 
 	router.HandleFunc("/mail", func(w http.ResponseWriter, r *http.Request) {
-		scheduler.CheckUpcomingSubscriptions(db)
+		apiKey := "re_AQ53FGSy_G3s6Ua6xvtXSmoF2iFL5JciV"
+
+		client := resend.NewClient(apiKey)
+
+		params := &resend.SendEmailRequest{
+			From:    "techstackmn@gmail.com",
+			To:      []string{"techstackmn@gmail.com"},
+			Html:    "<strong>hello world</strong>",
+			Subject: "Hello from Golang",
+			Cc:      []string{"cc@example.com"},
+			Bcc:     []string{"bcc@example.com"},
+			ReplyTo: "replyto@example.com",
+		}
+
+		sent, err := client.Emails.Send(params)
+		if err != nil {
+			fmt.Println(err.Error())
+			return
+		}
+		fmt.Println(sent.Id)
+
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	}).Methods("GET")
@@ -144,12 +165,12 @@ func main() {
 
 	// Configure CORS
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000", "https://subscription-tracker-gamma.vercel.app"},
+		AllowedOrigins:   []string{"http://localhost:3000", "https://subscription-tracker-gamma.vercel.app", "https://www.subtrack.sbs"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization", "X-Requested-With"},
 		AllowCredentials: true,
 		MaxAge:           3600,
-		Debug:            os.Getenv("ENV") == "development", // Enable debug in development
+		Debug:            os.Getenv("ENV") != "production", // Enable debug in development
 	})
 
 	// Wrap the router with CORS middleware
