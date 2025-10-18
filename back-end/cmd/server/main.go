@@ -132,7 +132,7 @@ func main() {
 	})
 
 	router.HandleFunc("/mail", func(w http.ResponseWriter, r *http.Request) {
-		apiKey := "re_AQ53FGSy_G3s6Ua6xvtXSmoF2iFL5JciV"
+		apiKey := os.Getenv("RESEND_API_KEY")
 
 		client := resend.NewClient(apiKey)
 
