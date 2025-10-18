@@ -87,6 +87,7 @@ func main() {
 	router.HandleFunc(basePath+"/login", handlers.Login(db)).Methods("POST")
 	router.HandleFunc(basePath+"/auth/google", handlers.AuthGoogle(db, googleOauthConfig)).Methods("POST")
 	router.HandleFunc(basePath+"/refresh", handlers.GenerateAccessToken(db)).Methods("POST")
+	router.HandleFunc(basePath+"/logout", handlers.LogoutHandler).Methods("POST")
 
 	// Protected routes (require authentication)
 	authRouter := router.PathPrefix("/").Subrouter()
