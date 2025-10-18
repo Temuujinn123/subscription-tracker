@@ -275,8 +275,16 @@ func GenerateAccessToken(db models.Database) http.HandlerFunc {
 			return
 		}
 
+		refreshToken, err := utils.GenerateRefreshJWT(*user)
+		if err != nil {
+			http.Error(w, "Failed to generate refresh token", http.StatusInternalServerError)
+			return
+		}
+
+		setHTTPCookie(w, refreshToken)
+
 		response := models.AccessTokenResponse{
-			Message: "Login Successful",
+			Message: "Successfully retrieved access token",
 			Token:   token,
 		}
 
