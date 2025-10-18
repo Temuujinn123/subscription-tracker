@@ -53,6 +53,13 @@ export const userApi = createApi({
         credentials: "include",
       }),
     }),
+    logOut: build.mutation<void, void>({
+      query: () => ({
+        url: "logout",
+        method: "POST",
+        credentials: "include",
+      }),
+    }),
   }),
 });
 
@@ -62,4 +69,5 @@ export const {
   useAuthGoogleMutation,
   useGetUserDetailQuery,
   useGetAccessTokenQuery,
+  useLogOutMutation,
 } = userApi;

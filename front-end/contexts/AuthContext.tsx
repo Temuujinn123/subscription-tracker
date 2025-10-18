@@ -1,10 +1,11 @@
-import { setAuthData } from "@/services/authSlice";
+import { clearAuthData, setAuthData } from "@/services/authSlice";
 import { RootState } from "@/services/store";
 import {
   useAuthGoogleMutation,
   useGetAccessTokenQuery,
   useGetUserDetailQuery,
   useLoginMutation,
+  useLogOutMutation,
   useRegisterMutation,
 } from "@/services/user";
 import { CodeResponse } from "@react-oauth/google";
@@ -43,6 +44,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const [handleLogin] = useLoginMutation();
   const [handleRegister] = useRegisterMutation();
+  const [handleLogout] = useLogOutMutation();
   const dispatch = useDispatch();
   const { token } = useSelector((state: RootState) => state.auth);
 
@@ -151,9 +153,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await handleLogout();
+    dispatch(clearAuthData());
     setUser(undefined);
-    localStorage.removeItem("token");
+    toast.success("Successfully logged out");
+    router.push("/login");
   };
 
   const value = {

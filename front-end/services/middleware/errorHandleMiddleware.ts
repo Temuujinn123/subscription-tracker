@@ -31,7 +31,6 @@ export const errorHandlerMiddleware: BaseQueryFn<
 
     switch (result.meta?.response?.status) {
       case 401:
-        console.log(api.endpoint);
         if (api.endpoint === "getAccessToken") {
           if (
             !window.location.pathname.includes("/subscriptions") &&
@@ -64,8 +63,6 @@ export const errorHandlerMiddleware: BaseQueryFn<
               return headers;
             },
           })(args, api, extraOptions);
-
-          console.log(response);
 
           return response;
         }
