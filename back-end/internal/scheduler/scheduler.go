@@ -16,7 +16,7 @@ func InitScheduler(db *database.DB) {
 	c := cron.New()
 
 	// Check for upcoming subscriptions every day at 12 AM
-	c.AddFunc("10 22 * * *", func() {
+	c.AddFunc("00 00 * * *", func() {
 		log.Println("Checking for upcoming subscriptions...")
 		CheckUpcomingSubscriptions(db)
 	})
