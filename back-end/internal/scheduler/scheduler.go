@@ -8,6 +8,7 @@ import (
 	"subscription-tracker/internal/database"
 	"subscription-tracker/internal/email"
 
+	"github.com/resend/resend-go/v2"
 	"github.com/robfig/cron/v3"
 )
 
@@ -15,7 +16,7 @@ func InitScheduler(db *database.DB) {
 	c := cron.New()
 
 	// Check for upcoming subscriptions every day at 12 AM
-	c.AddFunc("30 00 * * *", func() {
+	c.AddFunc("0 15 * * *", func() {
 		log.Println("Checking for upcoming subscriptions...")
 		CheckUpcomingSubscriptions(db)
 	})
@@ -34,15 +35,11 @@ func CheckUpcomingSubscriptions(db *database.DB) {
 	// Initialize email service
 	sendInterval := 5 * time.Second
 
-	emailConfig := email.EmailConfig{
-		SMTPHost:     "smtp.gmail.com",
-		SMTPPort:     443,
-		SMTPUser:     os.Getenv("SMTP_USER"),
-		SMTPPassword: os.Getenv("SMTP_PASSWORD"),
-		FromEmail:    os.Getenv("SMTP_FROM"),
-	}
+	apiKey := os.Getenv("RESEND_API_KEY")
 
-	emailService := email.NewEmailService(emailConfig)
+	client := resend.NewClient(apiKey)
+
+	emailService := email.NewEmailService(client, "noreply@subtrack.sbs")
 
 	for _, sub := range subscriptions {
 		err := emailService.SendSubscriptionAlert(sub)

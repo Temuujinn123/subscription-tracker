@@ -1,13 +1,10 @@
 package main
 
 import (
-	"crypto/tls"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"os"
-	"runtime"
 	"time"
 
 	"subscription-tracker/internal/cache"
@@ -115,36 +112,16 @@ func main() {
 		}).Methods("POST")
 	}
 
-	router.HandleFunc("/network", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("System Network Configuration Check")
-		fmt.Println("=================================")
-
-		// Check operating system
-		fmt.Printf("OS: %s\n", runtime.GOOS)
-
-		// Check local network interface
-		checkLocalNetwork()
-
-		// Check if it's a DNS vs IP issue
-		testDNSvsIP()
-
-		// Check outbound port restrictions
-		testCommonPorts()
-	})
-
 	router.HandleFunc("/mail", func(w http.ResponseWriter, r *http.Request) {
 		apiKey := os.Getenv("RESEND_API_KEY")
 
 		client := resend.NewClient(apiKey)
 
 		params := &resend.SendEmailRequest{
-			From:    "techstackmn@gmail.com",
-			To:      []string{"techstackmn@gmail.com"},
+			From:    "noreply@subtrack.sbs",
+			To:      []string{"temuujinn8563@gmail.com"},
 			Html:    "<strong>hello world</strong>",
 			Subject: "Hello from Golang",
-			Cc:      []string{"cc@example.com"},
-			Bcc:     []string{"bcc@example.com"},
-			ReplyTo: "replyto@example.com",
 		}
 
 		sent, err := client.Emails.Send(params)
@@ -187,116 +164,4 @@ func main() {
 
 	log.Println("Server starting on :8080")
 	log.Fatal(server.ListenAndServe())
-}
-
-func testSMTPPort(host, port string) {
-	address := net.JoinHostPort(host, port)
-
-	fmt.Printf("\nTesting %s...\n", address)
-
-	// Basic TCP connection test
-	conn, err := net.DialTimeout("tcp", address, 10*time.Second)
-	if err != nil {
-		fmt.Printf("  TCP connection failed: %v\n", err)
-		return
-	}
-	defer conn.Close()
-
-	fmt.Printf("  TCP connection successful\n")
-
-	// For SSL ports, try TLS handshake
-	if port == "465" {
-		tlsConn := tls.Client(conn, &tls.Config{
-			ServerName:         host,
-			InsecureSkipVerify: false,
-		})
-
-		err = tlsConn.Handshake()
-		if err != nil {
-			fmt.Printf("  TLS handshake failed: %v\n", err)
-			return
-		}
-		defer tlsConn.Close()
-
-		fmt.Printf("  TLS handshake successful\n")
-		fmt.Printf("  Connection encrypted with: %s\n", tlsConn.ConnectionState().CipherSuite)
-	}
-
-	// Try to read SMTP banner
-	conn.SetReadDeadline(time.Now().Add(5 * time.Second))
-	buffer := make([]byte, 1024)
-	n, err := conn.Read(buffer)
-	if err == nil {
-		fmt.Printf("  SMTP banner: %s", string(buffer[:n]))
-	}
-}
-
-func checkLocalNetwork() {
-	fmt.Println("\n1. Local Network Interface:")
-	interfaces, err := net.Interfaces()
-	if err != nil {
-		fmt.Printf("  Error getting interfaces: %v\n", err)
-		return
-	}
-
-	for _, iface := range interfaces {
-		addrs, _ := iface.Addrs()
-		if len(addrs) > 0 && iface.Flags&net.FlagUp != 0 {
-			fmt.Printf("  Interface: %s\n", iface.Name)
-			for _, addr := range addrs {
-				fmt.Printf("    - %s\n", addr)
-			}
-		}
-	}
-}
-
-func testDNSvsIP() {
-	fmt.Println("\n2. DNS Resolution vs Direct IP:")
-
-	// Test via hostname
-	hostnameTest := func(host, port string) {
-		addr := net.JoinHostPort(host, port)
-		conn, err := net.DialTimeout("tcp", addr, 5*time.Second)
-		if err != nil {
-			fmt.Printf("  %s: ✗ %v\n", host, err)
-		} else {
-			conn.Close()
-			fmt.Printf("  %s: ✓ Connected\n", host)
-		}
-	}
-
-	hostnameTest("smtp.gmail.com", "587")
-	hostnameTest("64.233.180.109", "587") // Direct IP
-	hostnameTest("142.250.74.109", "587") // Alternative IP
-}
-
-func testCommonPorts() {
-	fmt.Println("\n3. Common Outbound Port Test:")
-
-	ports := []struct {
-		port string
-		desc string
-	}{
-		{"80", "HTTP"},
-		{"443", "HTTPS"},
-		{"53", "DNS"},
-		{"22", "SSH"},
-		{"993", "IMAPS"},
-		{"995", "POP3S"},
-	}
-
-	for _, p := range ports {
-		testPort("google.com", p.port, p.desc)
-	}
-}
-
-func testPort(host, port, desc string) {
-	addr := net.JoinHostPort(host, port)
-	conn, err := net.DialTimeout("tcp", addr, 5*time.Second)
-	if err != nil {
-		fmt.Printf("  %s (%s): ✗ %v\n", port, desc, err)
-	} else {
-		conn.Close()
-		fmt.Printf("  %s (%s): ✓ Connected\n", port, desc)
-	}
 }
