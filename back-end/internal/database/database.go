@@ -317,6 +317,27 @@ func (db *DB) GetUpcomingSubscriptions() ([]models.Subscription, error) {
 	return subscriptions, nil
 }
 
+func (db *DB) UpdateUpcomingSubscription() error {
+	query := `
+		UPDATE subscriptions
+		SET updated_at = CURRENT_DATE,
+		next_billing_date = CASE
+		  WHEN billing_cycle = 'weekly' THEN next_billing_date + INTERVAL '7 days'
+		  WHEN billing_cycle = 'monthly' THEN next_billing_date + INTERVAL '1 month'
+		  ELSE next_billing_date + INTERVAL '1 year'
+		END
+		WHERE next_billing_date = CURRENT_DATE
+	`
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	return nil
+}
+
 // Statistic methods
 func (db *DB) GetUserSubscriptionsStats(userID int) (*models.SubscriptionStats, error) {
 	query := `

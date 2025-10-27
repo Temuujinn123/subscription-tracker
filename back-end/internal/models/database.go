@@ -7,6 +7,7 @@ type Database interface {
 	UpdateSubscription(id int, req CreateSubscriptionRequest) (*Subscription, error)
 	DeleteSubscription(id int, userID int) error
 	GetUpcomingSubscriptions() ([]Subscription, error)
+	UpdateUpcomingSubscription() error
 
 	GetUserSubscriptionsStats(userID int) (*SubscriptionStats, error)
 

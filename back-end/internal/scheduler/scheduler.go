@@ -49,4 +49,10 @@ func CheckUpcomingSubscriptions(db *database.DB) {
 
 		time.Sleep(sendInterval)
 	}
+
+	errUpdate := db.UpdateUpcomingSubscription()
+	if errUpdate != nil {
+		log.Printf("Error updating upcoming subscriptions: %v", err)
+		return
+	}
 }
